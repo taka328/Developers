@@ -3,7 +3,7 @@
 A modern web project built with TypeScript, Vite, and Tailwind CSS.
 The application includes a video player with switching functionality and a screenshot feature with download and delete options.
 
-Features
+#Features
 
 🎬 Custom video player
 
@@ -31,19 +31,8 @@ HTML / CSS / JavaScript
 
 These tools are commonly used in modern web development for fast builds and scalable front-end applications.
 
-Project Structure
-Developers/
-│
-├── .github/workflows     # CI/CD workflows
-├── public                # Static assets
-├── src                   # Application source code
-│
-├── index.html            # Main entry file
-├── package.json          # Project dependencies
-├── tsconfig.json         # TypeScript configuration
-├── vite.config.ts        # Vite configuration
-└── README.md
-Installation
+
+#Installation
 
 Clone the repository:
 
