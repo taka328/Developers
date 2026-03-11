@@ -37,7 +37,12 @@
   <div id="main-content" style="opacity: 0; width: 100%; display: flex; flex-direction: column; align-items: center;">
 
   <h1 class="text-4xl font-bold tracking-widest uppercase mb-2">Developers</h1>
-  <p class="text-neutral-400 text-sm mb-10">Video Player</p>
+  <p class="text-neutral-400 text-sm mb-3">Video Player</p>
+
+  <div id="pro-status-bar">
+    <span id="pro-badge" class="pro-badge" style="display:none">✦ PRO</span>
+    <button id="pro-upgrade-btn" onclick="openPaywall()" class="pro-upgrade-btn" style="display:none">✦ Upgrade to PRO &mdash; $25/mo</button>
+  </div>
 
   <!-- Tab buttons -->
   <div class="flex gap-3 mb-6 flex-wrap justify-center">
@@ -86,6 +91,76 @@
   </p>
 
   </div><!-- /#main-content -->
+
+  <!-- ===== Image Editor Modal ===== -->
+  <div id="editor-modal" style="display:none">
+    <div id="editor-container">
+      <div id="editor-toolbar">
+        <div id="editor-tools-left">
+          <button id="editor-tool-draw" onclick="setEditorTool('draw')" class="editor-tool-btn editor-tool--active">✏️ Draw</button>
+          <button id="editor-tool-crop" onclick="setEditorTool('crop')" class="editor-tool-btn">✂️ Crop</button>
+          <div class="editor-divider"></div>
+          <input type="color" id="editor-color-input" value="#ff0000" title="Brush color" class="editor-color-input">
+          <input type="range" id="editor-brush-size-input" min="1" max="40" value="4" title="Brush size" class="editor-size-input">
+          <div id="editor-brush-preview"></div>
+          <div class="editor-divider"></div>
+          <button onclick="editorUndo()" class="editor-action-btn">↩ Undo</button>
+          <button onclick="resetEditor()" class="editor-action-btn">↺ Reset</button>
+          <button id="editor-crop-apply-btn" onclick="applyCrop()" class="editor-action-btn editor-action-btn--crop" style="display:none">✂️ Apply Crop</button>
+        </div>
+        <div id="editor-tools-right">
+          <button onclick="saveEditorScreenshot()" class="editor-action-btn editor-action-btn--save">💾 Save</button>
+          <button onclick="closeEditor()" class="editor-close-btn">✕</button>
+        </div>
+      </div>
+      <div id="editor-canvas-wrap">
+        <div id="editor-canvas-container">
+          <canvas id="editor-canvas"></canvas>
+          <canvas id="editor-overlay-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Paywall Modal ===== -->
+  <div id="paywall-modal" style="display:none">
+    <div id="paywall-container">
+      <button onclick="closePaywall()" class="paywall-close-btn" title="Close">✕</button>
+      <div class="paywall-header">
+        <div class="paywall-icon">✦</div>
+        <h2 class="paywall-title">Developer PRO</h2>
+        <p class="paywall-price">$25<span> / month</span></p>
+      </div>
+      <ul class="paywall-features">
+        <li><span class="paywall-check">✓</span> Screenshot editor &mdash; draw &amp; crop</li>
+        <li><span class="paywall-check">✓</span> Unlimited screenshots</li>
+        <li><span class="paywall-check">✓</span> Priority support</li>
+        <li><span class="paywall-check">✓</span> Early access to new features</li>
+      </ul>
+      <form id="paywall-form" onsubmit="submitPaywall(event)" class="paywall-form" autocomplete="off">
+        <div class="paywall-field">
+          <label class="paywall-label">Cardholder name</label>
+          <input type="text" id="pay-name" placeholder="John Doe" required class="paywall-input">
+        </div>
+        <div class="paywall-field">
+          <label class="paywall-label">Card number</label>
+          <input type="text" id="pay-card" placeholder="1234 5678 9012 3456" maxlength="19" required class="paywall-input paywall-input--mono">
+        </div>
+        <div class="paywall-field-row">
+          <div class="paywall-field">
+            <label class="paywall-label">Expiry</label>
+            <input type="text" id="pay-expiry" placeholder="MM/YY" maxlength="5" required class="paywall-input paywall-input--mono">
+          </div>
+          <div class="paywall-field">
+            <label class="paywall-label">CVC</label>
+            <input type="text" id="pay-cvc" placeholder="123" maxlength="4" required class="paywall-input paywall-input--mono">
+          </div>
+        </div>
+        <button type="submit" id="paywall-submit-btn" class="paywall-submit-btn">Subscribe &mdash; $25/mo</button>
+      </form>
+      <p class="paywall-disclaimer">🔒 Secured by Stripe. Cancel anytime.</p>
+    </div>
+  </div>
 
   <script>
     const videos = {
@@ -138,6 +213,18 @@
 
     // ===== Keyboard shortcuts =====
     document.addEventListener('keydown', function (e) {
+      // Close editor on Escape
+      if (e.key === 'Escape') {
+        var modal = document.getElementById('editor-modal');
+        if (modal && modal.style.display !== 'none') { window.closeEditor(); return; }
+        var pwModal = document.getElementById('paywall-modal');
+        if (pwModal && pwModal.style.display !== 'none') { window.closePaywall(); return; }
+      }
+      // Skip video shortcuts when the editor or paywall is open, or user is in a form field
+      var edModal = document.getElementById('editor-modal');
+      if (edModal && edModal.style.display !== 'none') return;
+      var pwModal2 = document.getElementById('paywall-modal');
+      if (pwModal2 && pwModal2.style.display !== 'none') return;
       if (e.target.matches('input, textarea, select, button')) return;
       const video = document.getElementById('main-video');
       switch (e.key) {
@@ -332,7 +419,7 @@
       }
       grid.innerHTML = screenshots.map(function (s) {
         return '<div class="screenshot-card">' +
-          '<img src="' + s.dataUrl + '" alt="Screenshot" class="screenshot-img" loading="lazy" />' +
+          '<img src="' + s.dataUrl + '" alt="Screenshot" class="screenshot-img" loading="lazy" onclick="openEditor(\'' + s.id + '\')" />' +
           '<div class="screenshot-info">' +
             '<span class="screenshot-label">' + s.videoLabel + '</span>' +
             '<span class="screenshot-time">' + formatTime(s.videoTime) + '</span>' +
@@ -347,6 +434,329 @@
 
     // Initialise badge from persisted screenshots
     updateScreenshotBadge();
+
+    // ===== PRO =====
+    var PRO_KEY = 'dev_pro';
+
+    function isPro() {
+      return localStorage.getItem(PRO_KEY) === '1';
+    }
+
+    function updateProUI() {
+      var badge = document.getElementById('pro-badge');
+      var upgradeBtn = document.getElementById('pro-upgrade-btn');
+      if (isPro()) {
+        badge.style.display = '';
+        upgradeBtn.style.display = 'none';
+      } else {
+        badge.style.display = 'none';
+        upgradeBtn.style.display = '';
+      }
+    }
+
+    function openPaywall() {
+      document.getElementById('paywall-modal').style.display = 'flex';
+    }
+
+    function closePaywall() {
+      document.getElementById('paywall-modal').style.display = 'none';
+    }
+
+    function submitPaywall(e) {
+      e.preventDefault();
+      var btn = document.getElementById('paywall-submit-btn');
+      btn.textContent = 'Processing…';
+      btn.disabled = true;
+      setTimeout(function () {
+        localStorage.setItem(PRO_KEY, '1');
+        updateProUI();
+        closePaywall();
+        showToast('🎉 Welcome to Developer PRO!');
+        btn.textContent = 'Subscribe — $25/mo';
+        btn.disabled = false;
+        document.getElementById('paywall-form').reset();
+      }, 1500);
+    }
+
+    document.getElementById('pay-card').addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 16);
+      this.value = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+    });
+    document.getElementById('pay-expiry').addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 4);
+      if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+      this.value = v;
+    });
+    document.getElementById('pay-cvc').addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 4);
+    });
+
+    updateProUI();
+
+    // ===== Image Editor =====
+    (function () {
+      var mainCanvas = document.getElementById('editor-canvas');
+      var mainCtx = mainCanvas.getContext('2d');
+      var overlayCanvas = document.getElementById('editor-overlay-canvas');
+      var overlayCtx = overlayCanvas.getContext('2d');
+      var editorScreenshotId = null;
+      var editorTool = 'draw';
+      var editorColor = '#ff0000';
+      var editorBrushSize = 4;
+      var editorPointerDown = false;
+      var editorUndoStack = [];
+      var editorOriginalDataUrl = null;
+      var editorCropStart = null;
+      var editorCropEnd = null;
+      var editorCropReady = false;
+
+      function updateBrushPreview() {
+        var preview = document.getElementById('editor-brush-preview');
+        var size = Math.max(4, editorBrushSize);
+        preview.style.width  = size + 'px';
+        preview.style.height = size + 'px';
+        preview.style.background = editorColor;
+      }
+
+      document.getElementById('editor-color-input').addEventListener('input', function () {
+        editorColor = this.value;
+        updateBrushPreview();
+      });
+      document.getElementById('editor-brush-size-input').addEventListener('input', function () {
+        editorBrushSize = +this.value;
+        updateBrushPreview();
+      });
+      updateBrushPreview();
+
+      function getPos(e) {
+        var rect = mainCanvas.getBoundingClientRect();
+        var src = e.touches ? e.touches[0] : e;
+        var scaleX = mainCanvas.width / rect.width;
+        var scaleY = mainCanvas.height / rect.height;
+        return {
+          cx: (src.clientX - rect.left) * scaleX,
+          cy: (src.clientY - rect.top) * scaleY,
+          ox: src.clientX - rect.left,
+          oy: src.clientY - rect.top,
+        };
+      }
+
+      function syncOverlay() {
+        var rect = mainCanvas.getBoundingClientRect();
+        var w = Math.round(rect.width);
+        var h = Math.round(rect.height);
+        if (overlayCanvas.width !== w || overlayCanvas.height !== h) {
+          overlayCanvas.width = w;
+          overlayCanvas.height = h;
+        }
+      }
+
+      function clearOverlay() {
+        syncOverlay();
+        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+      }
+
+      function drawCropOverlay() {
+        syncOverlay();
+        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        if (!editorCropStart || !editorCropEnd) return;
+        var x = Math.min(editorCropStart.ox, editorCropEnd.ox);
+        var y = Math.min(editorCropStart.oy, editorCropEnd.oy);
+        var w = Math.abs(editorCropEnd.ox - editorCropStart.ox);
+        var h = Math.abs(editorCropEnd.oy - editorCropStart.oy);
+        overlayCtx.fillStyle = 'rgba(0,0,0,0.55)';
+        overlayCtx.fillRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        overlayCtx.clearRect(x, y, w, h);
+        overlayCtx.strokeStyle = 'rgba(255,255,255,0.9)';
+        overlayCtx.lineWidth = 1.5;
+        overlayCtx.setLineDash([6, 3]);
+        overlayCtx.strokeRect(x + 0.75, y + 0.75, w - 1.5, h - 1.5);
+        overlayCtx.setLineDash([]);
+        [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].forEach(function (c) {
+          overlayCtx.fillStyle = '#fff';
+          overlayCtx.fillRect(c[0] - 4, c[1] - 4, 8, 8);
+        });
+      }
+
+      function pushEditorUndo() {
+        editorUndoStack.push(mainCtx.getImageData(0, 0, mainCanvas.width, mainCanvas.height));
+        if (editorUndoStack.length > 30) editorUndoStack.shift();
+      }
+
+      function onDown(e) {
+        e.preventDefault();
+        editorPointerDown = true;
+        var p = getPos(e);
+        if (editorTool === 'draw') {
+          pushEditorUndo();
+          mainCtx.beginPath();
+          mainCtx.moveTo(p.cx, p.cy);
+        } else {
+          editorCropStart = p;
+          editorCropEnd = p;
+          editorCropReady = false;
+          document.getElementById('editor-crop-apply-btn').style.display = 'none';
+          drawCropOverlay();
+        }
+      }
+
+      function onMove(e) {
+        e.preventDefault();
+        if (!editorPointerDown) return;
+        var p = getPos(e);
+        if (editorTool === 'draw') {
+          mainCtx.lineWidth = editorBrushSize;
+          mainCtx.lineCap = 'round';
+          mainCtx.lineJoin = 'round';
+          mainCtx.strokeStyle = editorColor;
+          mainCtx.lineTo(p.cx, p.cy);
+          mainCtx.stroke();
+          mainCtx.beginPath();
+          mainCtx.moveTo(p.cx, p.cy);
+        } else {
+          editorCropEnd = p;
+          drawCropOverlay();
+        }
+      }
+
+      function onUp() {
+        if (!editorPointerDown) return;
+        editorPointerDown = false;
+        if (editorTool === 'draw') {
+          mainCtx.beginPath();
+        } else if (editorCropStart && editorCropEnd) {
+          var w = Math.abs(editorCropEnd.ox - editorCropStart.ox);
+          var h = Math.abs(editorCropEnd.oy - editorCropStart.oy);
+          if (w > 5 && h > 5) {
+            editorCropReady = true;
+            document.getElementById('editor-crop-apply-btn').style.display = '';
+          }
+        }
+      }
+
+      overlayCanvas.addEventListener('mousedown', onDown);
+      overlayCanvas.addEventListener('mousemove', onMove);
+      overlayCanvas.addEventListener('mouseup', onUp);
+      overlayCanvas.addEventListener('mouseleave', onUp);
+      overlayCanvas.addEventListener('touchstart', onDown, { passive: false });
+      overlayCanvas.addEventListener('touchmove', onMove, { passive: false });
+      overlayCanvas.addEventListener('touchend', onUp);
+
+      function updateEditorToolUI() {
+        ['draw', 'crop'].forEach(function (t) {
+          document.getElementById('editor-tool-' + t).classList.toggle('editor-tool--active', t === editorTool);
+        });
+        overlayCanvas.style.cursor = editorTool === 'draw' ? 'crosshair' : 'default';
+      }
+
+      window.openEditor = function (id) {
+        if (!isPro()) { openPaywall(); return; }
+        var screenshot = getScreenshots().find(function (s) { return s.id === id; });
+        if (!screenshot) return;
+        editorScreenshotId = id;
+        editorOriginalDataUrl = screenshot.dataUrl;
+        editorTool = 'draw';
+        editorUndoStack = [];
+        editorCropStart = null;
+        editorCropEnd = null;
+        editorCropReady = false;
+        var img = new Image();
+        img.onload = function () {
+          mainCanvas.width = img.naturalWidth;
+          mainCanvas.height = img.naturalHeight;
+          mainCtx.drawImage(img, 0, 0);
+          pushEditorUndo();
+          document.getElementById('editor-crop-apply-btn').style.display = 'none';
+          document.getElementById('editor-modal').style.display = 'flex';
+          updateEditorToolUI();
+          requestAnimationFrame(clearOverlay);
+        };
+        img.src = screenshot.dataUrl;
+      };
+
+      window.closeEditor = function () {
+        document.getElementById('editor-modal').style.display = 'none';
+        editorScreenshotId = null;
+      };
+
+      window.setEditorTool = function (tool) {
+        editorTool = tool;
+        editorCropStart = null;
+        editorCropEnd = null;
+        editorCropReady = false;
+        clearOverlay();
+        document.getElementById('editor-crop-apply-btn').style.display = 'none';
+        updateEditorToolUI();
+      };
+
+      window.editorUndo = function () {
+        if (editorUndoStack.length <= 1) return;
+        editorUndoStack.pop();
+        mainCtx.putImageData(editorUndoStack[editorUndoStack.length - 1], 0, 0);
+        clearOverlay();
+        editorCropStart = null;
+        editorCropEnd = null;
+        editorCropReady = false;
+        document.getElementById('editor-crop-apply-btn').style.display = 'none';
+      };
+
+      window.resetEditor = function () {
+        if (!editorOriginalDataUrl) return;
+        var img = new Image();
+        img.onload = function () {
+          mainCanvas.width = img.naturalWidth;
+          mainCanvas.height = img.naturalHeight;
+          mainCtx.drawImage(img, 0, 0);
+          editorUndoStack = [];
+          pushEditorUndo();
+          clearOverlay();
+          editorCropStart = null;
+          editorCropEnd = null;
+          editorCropReady = false;
+          document.getElementById('editor-crop-apply-btn').style.display = 'none';
+          requestAnimationFrame(syncOverlay);
+        };
+        img.src = editorOriginalDataUrl;
+      };
+
+      window.applyCrop = function () {
+        if (!editorCropReady || !editorCropStart || !editorCropEnd) return;
+        var rect = mainCanvas.getBoundingClientRect();
+        var scaleX = mainCanvas.width / rect.width;
+        var scaleY = mainCanvas.height / rect.height;
+        var x = Math.round(Math.min(editorCropStart.ox, editorCropEnd.ox) * scaleX);
+        var y = Math.round(Math.min(editorCropStart.oy, editorCropEnd.oy) * scaleY);
+        var w = Math.round(Math.abs(editorCropEnd.ox - editorCropStart.ox) * scaleX);
+        var h = Math.round(Math.abs(editorCropEnd.oy - editorCropStart.oy) * scaleY);
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+        w = Math.min(w, mainCanvas.width - x);
+        h = Math.min(h, mainCanvas.height - y);
+        if (w < 2 || h < 2) return;
+        var imgData = mainCtx.getImageData(x, y, w, h);
+        mainCanvas.width = w;
+        mainCanvas.height = h;
+        mainCtx.putImageData(imgData, 0, 0);
+        pushEditorUndo();
+        clearOverlay();
+        editorCropStart = null;
+        editorCropEnd = null;
+        editorCropReady = false;
+        document.getElementById('editor-crop-apply-btn').style.display = 'none';
+        requestAnimationFrame(syncOverlay);
+      };
+
+      window.saveEditorScreenshot = function () {
+        var dataUrl = mainCanvas.toDataURL('image/jpeg', 0.85);
+        var list = getScreenshots().map(function (s) {
+          return s.id === editorScreenshotId ? Object.assign({}, s, { dataUrl: dataUrl }) : s;
+        });
+        saveScreenshots(list);
+        window.closeEditor();
+        renderScreenshots();
+        showToast('✅ Screenshot updated!');
+      };
+    })();
   </script>
   <div id="screenshot-toast" class="screenshot-toast"></div>
 </body>
