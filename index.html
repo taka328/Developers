@@ -55,6 +55,9 @@
     <button id="btn-screenshots" onclick="switchTab('screenshots')" class="tab-btn">
       📷 Screenshots<span id="screenshot-count" class="screenshot-badge" style="display:none">0</span>
     </button>
+    <button id="btn-achievements" onclick="switchTab('achievements')" class="tab-btn">
+      🏆 Achievements<span id="achievement-count" class="screenshot-badge" style="display:none">0</span>
+    </button>
   </div>
 
   <div id="panel-video" class="w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-neutral-900 ring-1 ring-white/10" style="position:relative">
@@ -80,8 +83,16 @@
     <div id="screenshots-grid" class="screenshots-grid"></div>
   </div>
 
+  <!-- Achievements panel -->
+  <div id="panel-achievements" style="display:none; width:100%; max-width:56rem;">
+    <div class="achievements-header">
+      <span id="achievements-count-label" class="achievements-count-label"></span>
+    </div>
+    <div id="achievements-grid" class="achievements-grid"></div>
+  </div>
+
   <!-- Keyboard hints -->
-  <p class="mt-4 text-neutral-600 text-xs tracking-widest select-none">
+  <p id="keyboard-hints" class="mt-4 text-neutral-600 text-xs tracking-widest select-none">
     <span class="text-neutral-500">SPACE</span> play/pause &nbsp;·&nbsp;
     <span class="text-neutral-500">← →</span> seek 5s &nbsp;·&nbsp;
     <span class="text-neutral-500">↑ ↓</span> volume &nbsp;·&nbsp;
@@ -168,6 +179,22 @@
       videoplayback: '/Developers/videoplayback.mp4',
     };
 
+    // ===== Achievement Definitions =====
+    var ACHIEVEMENTS_KEY = 'dev_achievements';
+    var ACH_STATS_KEY    = 'dev_ach_stats';
+    var ACHIEVEMENTS_DEF = [
+      { id: 'first_screenshot', icon: '📷', name: 'Shutterbug',     desc: 'Capture your first screenshot' },
+      { id: 'screenshot_5',    icon: '🎞',  name: 'Film Roll',      desc: 'Capture 5 screenshots' },
+      { id: 'screenshot_10',   icon: '📸', name: 'Paparazzi',      desc: 'Capture 10 screenshots' },
+      { id: 'watch_5min',      icon: '⏱',  name: 'Quick Watch',    desc: 'Watch 5 minutes of video' },
+      { id: 'watch_30min',     icon: '🎬', name: 'Cinephile',      desc: 'Watch 30 minutes of video' },
+      { id: 'mute_10',         icon: '🔇', name: 'Silencer',       desc: 'Mute and unmute 10 times' },
+      { id: 'theme_explorer',  icon: '🎨', name: 'Theme Explorer', desc: 'Try all 3 themes' },
+      { id: 'pro_member',      icon: '⭐', name: 'PRO Member',     desc: 'Subscribe to Developer PRO' },
+      { id: 'night_owl',       icon: '🦉', name: 'Night Owl',      desc: 'Watch between midnight and 5 AM' },
+      { id: 'editor_artist',   icon: '✏️', name: 'Editor Artist',  desc: 'Edit and save a screenshot' },
+    ];
+
     // ===== Intro animation control =====
     (function () {
       const overlay = document.getElementById('intro-overlay');
@@ -188,6 +215,15 @@
       ['light', 'dark', 'goofy'].forEach(function (t) {
         document.getElementById('theme-btn-' + t).classList.toggle('theme-btn--active', t === theme);
       });
+      // Track theme exploration achievement
+      var stats = getAchStats();
+      var seen = stats.themesSeen || [];
+      if (!seen.includes(theme)) {
+        seen.push(theme);
+        stats.themesSeen = seen;
+        saveAchStats(stats);
+        if (seen.length >= 3) unlockAchievement('theme_explorer');
+      }
     }
 
     (function () {
@@ -281,16 +317,21 @@
     }
 
     function switchTab(key) {
-      var isVideoTab = key !== 'screenshots';
+      var isVideoTab = key === 'developers' || key === 'videoplayback';
       document.getElementById('panel-video').style.display = isVideoTab ? '' : 'none';
-      document.getElementById('panel-screenshots').style.display = isVideoTab ? 'none' : '';
+      document.getElementById('panel-screenshots').style.display = key === 'screenshots' ? '' : 'none';
+      document.getElementById('panel-achievements').style.display = key === 'achievements' ? '' : 'none';
       if (isVideoTab && key !== currentVideoKey) {
         switchVideo(key);
       }
       if (key === 'screenshots') {
         renderScreenshots();
       }
-      ['developers', 'videoplayback', 'screenshots'].forEach(function (k) {
+      if (key === 'achievements') {
+        renderAchievements();
+      }
+      document.getElementById('keyboard-hints').style.display = isVideoTab ? '' : 'none';
+      ['developers', 'videoplayback', 'screenshots', 'achievements'].forEach(function (k) {
         document.getElementById('btn-' + k).classList.toggle('tab-btn--active', k === key);
       });
     }
@@ -380,6 +421,11 @@
 
       updateScreenshotBadge();
       showToast('📷 Screenshot saved!');
+      // Check screenshot achievements
+      var shotCount = getScreenshots().length;
+      unlockAchievement('first_screenshot');
+      if (shotCount >= 5)  unlockAchievement('screenshot_5');
+      if (shotCount >= 10) unlockAchievement('screenshot_10');
     }
 
     function deleteScreenshot(id) {
@@ -435,6 +481,101 @@
     // Initialise badge from persisted screenshots
     updateScreenshotBadge();
 
+    // ===== Achievements =====
+    function getAchievements() {
+      try { return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY) || '{}'); } catch (e) { return {}; }
+    }
+
+    function getAchStats() {
+      try { return JSON.parse(localStorage.getItem(ACH_STATS_KEY) || '{}'); } catch (e) { return {}; }
+    }
+
+    function saveAchStats(stats) {
+      localStorage.setItem(ACH_STATS_KEY, JSON.stringify(stats));
+    }
+
+    var achToastTimer;
+    function showAchievementToast(msg) {
+      var toast = document.getElementById('achievement-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(achToastTimer);
+      achToastTimer = setTimeout(function () { toast.classList.remove('show'); }, 3500);
+    }
+
+    function unlockAchievement(id) {
+      var earned = getAchievements();
+      if (earned[id]) return;
+      earned[id] = new Date().toISOString();
+      localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(earned));
+      var def = ACHIEVEMENTS_DEF.find(function (a) { return a.id === id; });
+      if (def) showAchievementToast('🏆 ' + def.name + ' — ' + def.desc);
+      updateAchievementBadge();
+      var panel = document.getElementById('panel-achievements');
+      if (panel && panel.style.display !== 'none') renderAchievements();
+    }
+
+    function updateAchievementBadge() {
+      var count = Object.keys(getAchievements()).length;
+      var badge = document.getElementById('achievement-count');
+      if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
+    }
+
+    function renderAchievements() {
+      var grid = document.getElementById('achievements-grid');
+      var label = document.getElementById('achievements-count-label');
+      var earned = getAchievements();
+      var earnedCount = Object.keys(earned).length;
+      label.textContent = earnedCount + ' / ' + ACHIEVEMENTS_DEF.length + ' badges earned';
+      grid.innerHTML = ACHIEVEMENTS_DEF.map(function (a) {
+        var isEarned = !!earned[a.id];
+        var dateStr = isEarned
+          ? new Date(earned[a.id]).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+          : '';
+        return '<div class="achievement-card ' + (isEarned ? 'achievement-card--earned' : 'achievement-card--locked') + '">' +
+          '<div class="achievement-icon">' + a.icon + '</div>' +
+          '<p class="achievement-name">' + a.name + '</p>' +
+          '<p class="achievement-desc">' + a.desc + '</p>' +
+          (isEarned ? '<p class="achievement-earned-at">' + dateStr + '</p>' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    // Watch-time and mute tracking
+    (function () {
+      var video = document.getElementById('main-video');
+      var lastVideoTime = null;
+
+      video.addEventListener('timeupdate', function () {
+        var now = video.currentTime;
+        if (lastVideoTime !== null && !video.paused) {
+          var delta = now - lastVideoTime;
+          if (delta > 0 && delta < 2) {
+            var stats = getAchStats();
+            stats.watchSecs = (stats.watchSecs || 0) + delta;
+            saveAchStats(stats);
+            if (stats.watchSecs >= 300)  unlockAchievement('watch_5min');
+            if (stats.watchSecs >= 1800) unlockAchievement('watch_30min');
+          }
+        }
+        lastVideoTime = now;
+        if (!video.paused && new Date().getHours() < 5) unlockAchievement('night_owl');
+      });
+
+      var lastMuted = video.muted;
+      video.addEventListener('volumechange', function () {
+        if (video.muted !== lastMuted) {
+          lastMuted = video.muted;
+          var stats = getAchStats();
+          stats.muteCount = (stats.muteCount || 0) + 1;
+          saveAchStats(stats);
+          if (stats.muteCount >= 10) unlockAchievement('mute_10');
+        }
+      });
+    })();
+
+    updateAchievementBadge();
+
     // ===== PRO =====
     var PRO_KEY = 'dev_pro';
 
@@ -472,6 +613,7 @@
         updateProUI();
         closePaywall();
         showToast('🎉 Welcome to Developer PRO!');
+        unlockAchievement('pro_member');
         btn.textContent = 'Subscribe — $25/mo';
         btn.disabled = false;
         document.getElementById('paywall-form').reset();
@@ -752,6 +894,7 @@
           return s.id === editorScreenshotId ? Object.assign({}, s, { dataUrl: dataUrl }) : s;
         });
         saveScreenshots(list);
+        unlockAchievement('editor_artist');
         window.closeEditor();
         renderScreenshots();
         showToast('✅ Screenshot updated!');
@@ -759,5 +902,6 @@
     })();
   </script>
   <div id="screenshot-toast" class="screenshot-toast"></div>
+  <div id="achievement-toast"></div>
 </body>
 </html>

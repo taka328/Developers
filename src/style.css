@@ -1042,3 +1042,174 @@
   margin: 0.9rem 0 0;
   letter-spacing: 0.02em;
 }
+
+/* ===== Achievements Panel ===== */
+.achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  min-height: 2rem;
+}
+
+.achievements-count-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.08em;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.achievement-card {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.45rem;
+  background: rgb(23, 23, 23);
+  outline: 1px solid rgba(255, 255, 255, 0.07);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.achievement-card--earned {
+  outline: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.07);
+}
+
+.achievement-card--earned:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 0 24px rgba(255, 215, 0, 0.12);
+}
+
+.achievement-card--locked {
+  opacity: 0.4;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.1rem;
+}
+
+.achievement-card--locked .achievement-icon {
+  filter: grayscale(1);
+}
+
+.achievement-name {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.achievement-desc {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.achievement-earned-at {
+  font-size: 0.62rem;
+  color: rgba(255, 215, 0, 0.55);
+  font-family: monospace;
+  margin-top: 0.2rem;
+}
+
+/* ===== Achievement Toast ===== */
+#achievement-toast {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: linear-gradient(135deg, rgba(18, 13, 0, 0.97), rgba(28, 20, 0, 0.97));
+  color: #ffd700;
+  padding: 0.6rem 1.2rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  pointer-events: none;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 18px rgba(255, 215, 0, 0.1);
+  z-index: 9001;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+  white-space: nowrap;
+}
+
+#achievement-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ===== Light theme — achievements ===== */
+[data-theme="light"] .achievement-card {
+  background: #fff;
+  outline-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .achievement-card--earned {
+  outline-color: rgba(160, 110, 0, 0.3);
+  box-shadow: 0 0 20px rgba(160, 110, 0, 0.07);
+}
+
+[data-theme="light"] .achievement-card--earned:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12), 0 0 24px rgba(160, 110, 0, 0.1);
+}
+
+[data-theme="light"] .achievement-name {
+  color: #111;
+}
+
+[data-theme="light"] .achievement-desc {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .achievement-earned-at {
+  color: rgba(140, 96, 0, 0.65);
+}
+
+[data-theme="light"] .achievements-count-label {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] #achievement-toast {
+  background: rgba(255, 248, 220, 0.97);
+  color: #7a5200;
+  border-color: rgba(160, 110, 0, 0.35);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 18px rgba(160, 110, 0, 0.08);
+}
+
+/* ===== Goofy theme — achievements ===== */
+[data-theme="goofy"] .achievement-card {
+  background: rgba(0, 0, 0, 0.25);
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 1.5rem;
+}
+
+[data-theme="goofy"] .achievement-name {
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .achievement-desc {
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .achievements-count-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] #achievement-toast {
+  font-family: 'Comic Sans MS', cursive;
+}
