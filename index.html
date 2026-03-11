@@ -58,6 +58,9 @@
     <button id="btn-achievements" onclick="switchTab('achievements')" class="tab-btn">
       🏆 Achievements<span id="achievement-count" class="screenshot-badge" style="display:none">0</span>
     </button>
+    <button id="btn-stats" onclick="switchTab('stats')" class="tab-btn">
+      📊 Stats
+    </button>
   </div>
 
   <div id="panel-video" class="w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl bg-neutral-900 ring-1 ring-white/10" style="position:relative">
@@ -81,6 +84,11 @@
       <button onclick="clearAllScreenshots()" class="screenshots-clear-btn">Clear All</button>
     </div>
     <div id="screenshots-grid" class="screenshots-grid"></div>
+  </div>
+
+  <!-- Stats panel -->
+  <div id="panel-stats" style="display:none; width:100%; max-width:56rem;">
+    <div id="stats-content"></div>
   </div>
 
   <!-- Achievements panel -->
@@ -321,6 +329,7 @@
       document.getElementById('panel-video').style.display = isVideoTab ? '' : 'none';
       document.getElementById('panel-screenshots').style.display = key === 'screenshots' ? '' : 'none';
       document.getElementById('panel-achievements').style.display = key === 'achievements' ? '' : 'none';
+      document.getElementById('panel-stats').style.display = key === 'stats' ? '' : 'none';
       if (isVideoTab && key !== currentVideoKey) {
         switchVideo(key);
       }
@@ -330,8 +339,11 @@
       if (key === 'achievements') {
         renderAchievements();
       }
+      if (key === 'stats') {
+        renderStats();
+      }
       document.getElementById('keyboard-hints').style.display = isVideoTab ? '' : 'none';
-      ['developers', 'videoplayback', 'screenshots', 'achievements'].forEach(function (k) {
+      ['developers', 'videoplayback', 'screenshots', 'achievements', 'stats'].forEach(function (k) {
         document.getElementById('btn-' + k).classList.toggle('tab-btn--active', k === key);
       });
     }
@@ -421,6 +433,8 @@
 
       updateScreenshotBadge();
       showToast('📷 Screenshot saved!');
+      // Track total shots taken
+      var st = getAchStats(); st.totalShotsTaken = (st.totalShotsTaken || 0) + 1; saveAchStats(st);
       // Check screenshot achievements
       var shotCount = getScreenshots().length;
       unlockAchievement('first_screenshot');
@@ -433,6 +447,7 @@
       saveScreenshots(list);
       updateScreenshotBadge();
       renderScreenshots();
+      var st = getAchStats(); st.deleteCount = (st.deleteCount || 0) + 1; saveAchStats(st);
     }
 
     function downloadScreenshot(id) {
@@ -444,6 +459,7 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      var st = getAchStats(); st.downloadCount = (st.downloadCount || 0) + 1; saveAchStats(st);
     }
 
     function clearAllScreenshots() {
@@ -575,6 +591,58 @@
     })();
 
     updateAchievementBadge();
+
+    // Record first visit
+    (function () {
+      var st = getAchStats();
+      if (!st.firstVisit) { st.firstVisit = new Date().toISOString(); saveAchStats(st); }
+    })();
+
+    // ===== Stats =====
+    function formatWatchTime(secs) {
+      secs = Math.floor(secs || 0);
+      var h = Math.floor(secs / 3600);
+      var m = Math.floor((secs % 3600) / 60);
+      var s = secs % 60;
+      if (h > 0) return h + 'h ' + m + 'm ' + s + 's';
+      if (m > 0) return m + 'm ' + s + 's';
+      return s + 's';
+    }
+
+    function renderStats() {
+      var st      = getAchStats();
+      var shots   = getScreenshots();
+      var earned  = getAchievements();
+      var earnedCount = Object.keys(earned).length;
+
+      var statCards = [
+        { icon: '⏱', value: formatWatchTime(st.watchSecs), label: 'Watch time' },
+        { icon: '📷', value: shots.length,                  label: 'Screenshots saved' },
+        { icon: '📸', value: st.totalShotsTaken || 0,       label: 'Total shots taken' },
+        { icon: '✏️', value: st.editCount || 0,             label: 'Screenshots edited' },
+        { icon: '⬇️', value: st.downloadCount || 0,         label: 'Downloads' },
+        { icon: '🗑️', value: st.deleteCount || 0,           label: 'Deleted' },
+        { icon: '🔇', value: st.muteCount || 0,             label: 'Mute toggles' },
+        { icon: '🎨', value: (st.themesSeen || []).length,  label: 'Themes tried' },
+        { icon: '🏆', value: earnedCount + ' / ' + ACHIEVEMENTS_DEF.length, label: 'Badges earned' },
+        { icon: '⭐', value: isPro() ? 'PRO' : 'Free',      label: 'Account tier' },
+      ];
+
+      var firstVisitStr = st.firstVisit
+        ? new Date(st.firstVisit).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+        : 'Today';
+
+      var html = '<div class="stats-grid">' +
+        statCards.map(function (c) {
+          return '<div class="stat-card"><div class="stat-icon">' + c.icon + '</div>' +
+            '<div class="stat-value">' + c.value + '</div>' +
+            '<div class="stat-label">' + c.label + '</div></div>';
+        }).join('') +
+        '</div>' +
+        '<p class="stats-since">Tracking since ' + firstVisitStr + '</p>';
+
+      document.getElementById('stats-content').innerHTML = html;
+    }
 
     // ===== PRO =====
     var PRO_KEY = 'dev_pro';
@@ -895,6 +963,7 @@
         });
         saveScreenshots(list);
         unlockAchievement('editor_artist');
+        var st = getAchStats(); st.editCount = (st.editCount || 0) + 1; saveAchStats(st);
         window.closeEditor();
         renderScreenshots();
         showToast('✅ Screenshot updated!');
