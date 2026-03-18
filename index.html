@@ -269,49 +269,171 @@
   <!-- Game panel -->
   <div id="panel-game" style="display:none; width:100%; max-width:56rem;">
 
+    <!-- Game Selector -->
+    <div class="game-selector">
+      <button id="game-sel-typing" onclick="selectGame('typing')" class="game-sel-btn game-sel-btn--active">
+        <span class="game-sel-icon">⌨️</span>
+        <span class="game-sel-label">Typing</span>
+      </button>
+      <button id="game-sel-quiz" onclick="selectGame('quiz')" class="game-sel-btn">
+        <span class="game-sel-icon">🧠</span>
+        <span class="game-sel-label">Code Quiz</span>
+      </button>
+      <button id="game-sel-bug" onclick="selectGame('bug')" class="game-sel-btn">
+        <span class="game-sel-icon">🐛</span>
+        <span class="game-sel-label">Bug Hunt</span>
+      </button>
+    </div>
+
+    <!-- Mode Toggle: Practice / Daily -->
+    <div class="game-mode-toggle">
+      <button id="game-mode-practice" onclick="setGameMode('practice')" class="game-mode-btn game-mode-btn--active">🎮 Practice</button>
+      <button id="game-mode-daily" onclick="setGameMode('daily')" class="game-mode-btn">📅 Daily Challenge<span id="daily-played-badge" class="daily-played-badge" style="display:none">✓</span></button>
+    </div>
+
     <!-- Game area -->
     <div id="game-area" class="game-area">
-      <div id="game-start-screen" class="game-start-screen">
-        <div class="game-title">⌨️ Dev Typing Challenge</div>
-        <p class="game-desc">Type programming keywords as fast as you can!<br>You have <strong>30 seconds</strong>.</p>
-        <div class="game-name-field">
-          <label class="game-name-label">Your name for the leaderboard</label>
-          <input type="text" id="game-player-name" class="game-name-input" placeholder="Enter your name" maxlength="30" autocomplete="off" />
+
+      <!-- ===== Typing Game ===== -->
+      <div id="game-typing" class="game-container">
+        <div id="typing-start-screen" class="game-start-screen">
+          <div class="game-title">⌨️ Dev Typing Challenge</div>
+          <p class="game-desc">Type programming keywords as fast as you can!<br>You have <strong>30 seconds</strong>.</p>
+          <div id="typing-daily-info" class="daily-info" style="display:none">
+            <span class="daily-info-date" id="typing-daily-date"></span>
+            <span class="daily-info-note">One attempt per day!</span>
+          </div>
+          <div class="game-name-field">
+            <label class="game-name-label">Your name for the leaderboard</label>
+            <input type="text" id="game-player-name" class="game-name-input" placeholder="Enter your name" maxlength="30" autocomplete="off" />
+          </div>
+          <button onclick="startTypingGame()" id="typing-start-btn" class="game-start-btn">Start Game</button>
         </div>
-        <button onclick="startGame()" class="game-start-btn">Start Game</button>
+
+        <div id="typing-play-screen" style="display:none">
+          <div class="game-hud">
+            <span class="game-hud-item">⏱ <span id="game-timer">30</span>s</span>
+            <span class="game-hud-item">✅ <span id="game-score">0</span> words</span>
+            <span class="game-hud-item">🔥 <span id="game-streak">0</span> streak</span>
+          </div>
+          <div id="game-word-display" class="game-word-display"></div>
+          <input type="text" id="game-input" class="game-input" placeholder="Type here..." autocomplete="off" autocapitalize="off" spellcheck="false" />
+          <div id="game-feedback" class="game-feedback"></div>
+        </div>
+
+        <div id="typing-over-screen" style="display:none">
+          <div class="game-over-title">🏁 Time's Up!</div>
+          <div class="game-final-score">You typed <span id="game-final-words">0</span> words</div>
+          <div class="game-final-stats">
+            <span>Best streak: <strong id="game-final-streak">0</strong></span>
+            <span>Accuracy: <strong id="game-final-accuracy">0%</strong></span>
+          </div>
+          <div id="typing-submit-section" class="game-submit-section">
+            <button onclick="submitScore()" id="game-submit-btn" class="game-submit-btn">🚀 Submit to Leaderboard</button>
+            <p id="game-submit-status" class="game-submit-status"></p>
+          </div>
+          <button onclick="resetTypingGame()" class="game-start-btn" style="margin-top:0.75rem">Play Again</button>
+        </div>
       </div>
 
-      <div id="game-play-screen" style="display:none">
-        <div class="game-hud">
-          <span class="game-hud-item">⏱ <span id="game-timer">30</span>s</span>
-          <span class="game-hud-item">✅ <span id="game-score">0</span> words</span>
-          <span class="game-hud-item">🔥 <span id="game-streak">0</span> streak</span>
+      <!-- ===== Code Quiz Game ===== -->
+      <div id="game-quiz" class="game-container" style="display:none">
+        <div id="quiz-start-screen" class="game-start-screen">
+          <div class="game-title">🧠 Code Quiz</div>
+          <p class="game-desc">Answer programming questions as fast as you can!<br><strong>10 questions</strong>, earn points for speed &amp; accuracy.</p>
+          <div id="quiz-daily-info" class="daily-info" style="display:none">
+            <span class="daily-info-date" id="quiz-daily-date"></span>
+            <span class="daily-info-note">One attempt per day!</span>
+          </div>
+          <div class="game-name-field">
+            <label class="game-name-label">Your name for the leaderboard</label>
+            <input type="text" id="quiz-player-name" class="game-name-input" placeholder="Enter your name" maxlength="30" autocomplete="off" />
+          </div>
+          <button onclick="startQuizGame()" id="quiz-start-btn" class="game-start-btn">Start Quiz</button>
         </div>
-        <div id="game-word-display" class="game-word-display"></div>
-        <input type="text" id="game-input" class="game-input" placeholder="Type here..." autocomplete="off" autocapitalize="off" spellcheck="false" />
-        <div id="game-feedback" class="game-feedback"></div>
+
+        <div id="quiz-play-screen" style="display:none">
+          <div class="game-hud">
+            <span class="game-hud-item">❓ <span id="quiz-progress">1/10</span></span>
+            <span class="game-hud-item">✅ <span id="quiz-correct">0</span> correct</span>
+            <span class="game-hud-item">⏱ <span id="quiz-timer">0</span>s</span>
+          </div>
+          <div id="quiz-question" class="quiz-question"></div>
+          <div id="quiz-code" class="quiz-code" style="display:none"></div>
+          <div id="quiz-options" class="quiz-options"></div>
+          <div id="quiz-feedback" class="game-feedback"></div>
+        </div>
+
+        <div id="quiz-over-screen" style="display:none">
+          <div class="game-over-title">🧠 Quiz Complete!</div>
+          <div class="game-final-score">You got <span id="quiz-final-correct">0</span>/10 correct</div>
+          <div class="game-final-stats">
+            <span>Score: <strong id="quiz-final-score">0</strong> pts</span>
+            <span>Time: <strong id="quiz-final-time">0</strong>s</span>
+          </div>
+          <div id="quiz-submit-section" class="game-submit-section">
+            <button onclick="submitQuizScore()" id="quiz-submit-btn" class="game-submit-btn">🚀 Submit to Leaderboard</button>
+            <p id="quiz-submit-status" class="game-submit-status"></p>
+          </div>
+          <button onclick="resetQuizGame()" class="game-start-btn" style="margin-top:0.75rem">Play Again</button>
+        </div>
       </div>
 
-      <div id="game-over-screen" style="display:none">
-        <div class="game-over-title">🏁 Time's Up!</div>
-        <div class="game-final-score">You typed <span id="game-final-words">0</span> words</div>
-        <div class="game-final-stats">
-          <span>Best streak: <strong id="game-final-streak">0</strong></span>
-          <span>Accuracy: <strong id="game-final-accuracy">0%</strong></span>
+      <!-- ===== Bug Hunt Game ===== -->
+      <div id="game-bug" class="game-container" style="display:none">
+        <div id="bug-start-screen" class="game-start-screen">
+          <div class="game-title">🐛 Bug Hunt</div>
+          <p class="game-desc">Find the bug in the code snippet!<br><strong>8 rounds</strong>, pick the line with the error.</p>
+          <div id="bug-daily-info" class="daily-info" style="display:none">
+            <span class="daily-info-date" id="bug-daily-date"></span>
+            <span class="daily-info-note">One attempt per day!</span>
+          </div>
+          <div class="game-name-field">
+            <label class="game-name-label">Your name for the leaderboard</label>
+            <input type="text" id="bug-player-name" class="game-name-input" placeholder="Enter your name" maxlength="30" autocomplete="off" />
+          </div>
+          <button onclick="startBugGame()" id="bug-start-btn" class="game-start-btn">Start Hunting</button>
         </div>
-        <div id="game-submit-section" class="game-submit-section">
-          <button onclick="submitScore()" id="game-submit-btn" class="game-submit-btn">🚀 Submit to Leaderboard</button>
-          <p id="game-submit-status" class="game-submit-status"></p>
+
+        <div id="bug-play-screen" style="display:none">
+          <div class="game-hud">
+            <span class="game-hud-item">🐛 <span id="bug-progress">1/8</span></span>
+            <span class="game-hud-item">✅ <span id="bug-correct">0</span> found</span>
+            <span class="game-hud-item">⏱ <span id="bug-timer">0</span>s</span>
+          </div>
+          <p id="bug-hint" class="bug-hint"></p>
+          <div id="bug-code" class="bug-code"></div>
+          <div id="bug-feedback" class="game-feedback"></div>
         </div>
-        <button onclick="resetGame()" class="game-start-btn" style="margin-top:0.75rem">Play Again</button>
+
+        <div id="bug-over-screen" style="display:none">
+          <div class="game-over-title">🐛 Hunt Complete!</div>
+          <div class="game-final-score">You found <span id="bug-final-correct">0</span>/8 bugs</div>
+          <div class="game-final-stats">
+            <span>Score: <strong id="bug-final-score">0</strong> pts</span>
+            <span>Time: <strong id="bug-final-time">0</strong>s</span>
+          </div>
+          <div id="bug-submit-section" class="game-submit-section">
+            <button onclick="submitBugScore()" id="bug-submit-btn" class="game-submit-btn">🚀 Submit to Leaderboard</button>
+            <p id="bug-submit-status" class="game-submit-status"></p>
+          </div>
+          <button onclick="resetBugGame()" class="game-start-btn" style="margin-top:0.75rem">Play Again</button>
+        </div>
       </div>
+
     </div>
 
     <!-- Leaderboard -->
     <div class="leaderboard-section">
       <div class="leaderboard-header">
         <span class="leaderboard-title">🏆 Leaderboard</span>
-        <button onclick="refreshLeaderboard()" class="leaderboard-refresh-btn">↻ Refresh</button>
+        <div class="leaderboard-header-right">
+          <div class="leaderboard-filter">
+            <button id="lb-filter-all" onclick="setLeaderboardFilter('all')" class="lb-filter-btn lb-filter-btn--active">All</button>
+            <button id="lb-filter-friends" onclick="setLeaderboardFilter('friends')" class="lb-filter-btn">Friends</button>
+          </div>
+          <button onclick="refreshLeaderboard()" class="leaderboard-refresh-btn">↻ Refresh</button>
+        </div>
       </div>
       <div id="leaderboard-content" class="leaderboard-content">
         <p class="leaderboard-empty">Loading leaderboard…</p>
@@ -2212,6 +2334,85 @@
     })();
 
     // ===== Dev Typing Game =====
+    // ===== Game System =====
+    var currentGameType = 'typing'; // typing | quiz | bug
+    var currentGameMode = 'practice'; // practice | daily
+    var leaderboardFilter = 'all'; // all | friends
+
+    function getTodayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function getDailySeed() {
+      var d = getTodayStr();
+      var h = 0;
+      for (var i = 0; i < d.length; i++) { h = ((h << 5) - h) + d.charCodeAt(i); h |= 0; }
+      return Math.abs(h);
+    }
+
+    function seededRandom(seed) {
+      var s = seed;
+      return function () {
+        s = (s * 16807 + 0) % 2147483647;
+        return (s - 1) / 2147483646;
+      };
+    }
+
+    function hasDailyPlayed(gameType) {
+      try { return localStorage.getItem('daily_' + gameType + '_' + getTodayStr()) === '1'; }
+      catch (e) { return false; }
+    }
+
+    function markDailyPlayed(gameType) {
+      try { localStorage.setItem('daily_' + gameType + '_' + getTodayStr(), '1'); }
+      catch (e) {}
+    }
+
+    function selectGame(type) {
+      currentGameType = type;
+      ['typing', 'quiz', 'bug'].forEach(function (t) {
+        var el = document.getElementById('game-' + t);
+        if (el) el.style.display = t === type ? '' : 'none';
+        var btn = document.getElementById('game-sel-' + t);
+        if (btn) btn.classList.toggle('game-sel-btn--active', t === type);
+      });
+      updateDailyUI();
+      refreshLeaderboard();
+    }
+
+    function setGameMode(mode) {
+      currentGameMode = mode;
+      document.getElementById('game-mode-practice').classList.toggle('game-mode-btn--active', mode === 'practice');
+      document.getElementById('game-mode-daily').classList.toggle('game-mode-btn--active', mode === 'daily');
+      updateDailyUI();
+      refreshLeaderboard();
+    }
+
+    function updateDailyUI() {
+      var isDaily = currentGameMode === 'daily';
+      var dateStr = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      ['typing', 'quiz', 'bug'].forEach(function (t) {
+        var info = document.getElementById(t + '-daily-info');
+        if (info) info.style.display = (isDaily && t === currentGameType) ? '' : 'none';
+        var dateEl = document.getElementById(t + '-daily-date');
+        if (dateEl) dateEl.textContent = '\ud83d\udcc5 ' + dateStr;
+      });
+      var badge = document.getElementById('daily-played-badge');
+      if (badge) badge.style.display = (hasDailyPlayed(currentGameType)) ? '' : 'none';
+
+      // Disable start button if daily already played
+      var startBtnId = currentGameType === 'typing' ? 'typing-start-btn' : currentGameType === 'quiz' ? 'quiz-start-btn' : 'bug-start-btn';
+      var startBtn = document.getElementById(startBtnId);
+      if (startBtn && isDaily && hasDailyPlayed(currentGameType)) {
+        startBtn.disabled = true;
+        startBtn.textContent = '\u2705 Played Today';
+      } else if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.textContent = currentGameType === 'typing' ? 'Start Game' : currentGameType === 'quiz' ? 'Start Quiz' : 'Start Hunting';
+      }
+    }
+
+    // ===== Typing Game =====
     var GAME_WORDS = [
       'function','const','let','var','return','async','await','promise',
       'class','extends','import','export','default','module','require',
@@ -2241,12 +2442,14 @@
     var gameTotalAttempts = 0;
     var gameCurrentWord = '';
     var gamePlayerName = '';
+    var typingDailyRng = null;
 
     function pickRandomWord() {
+      if (typingDailyRng) return GAME_WORDS[Math.floor(typingDailyRng() * GAME_WORDS.length)];
       return GAME_WORDS[Math.floor(Math.random() * GAME_WORDS.length)];
     }
 
-    function startGame() {
+    function startTypingGame() {
       var nameInput = document.getElementById('game-player-name');
       gamePlayerName = (nameInput.value || '').trim();
       if (!gamePlayerName) {
@@ -2255,14 +2458,20 @@
         setTimeout(function () { nameInput.style.outline = ''; }, 1500);
         return;
       }
+      if (currentGameMode === 'daily') {
+        if (hasDailyPlayed('typing')) { showToast('\u26a0\ufe0f Already played today!'); return; }
+        typingDailyRng = seededRandom(getDailySeed() + 1);
+      } else {
+        typingDailyRng = null;
+      }
       gameScore = 0;
       gameStreak = 0;
       gameBestStreak = 0;
       gameTotalAttempts = 0;
       gameTimeLeft = GAME_DURATION;
-      document.getElementById('game-start-screen').style.display = 'none';
-      document.getElementById('game-over-screen').style.display = 'none';
-      document.getElementById('game-play-screen').style.display = '';
+      document.getElementById('typing-start-screen').style.display = 'none';
+      document.getElementById('typing-over-screen').style.display = 'none';
+      document.getElementById('typing-play-screen').style.display = '';
       document.getElementById('game-score').textContent = '0';
       document.getElementById('game-streak').textContent = '0';
       document.getElementById('game-timer').textContent = gameTimeLeft;
@@ -2275,7 +2484,7 @@
       gameTimer = setInterval(function () {
         gameTimeLeft--;
         document.getElementById('game-timer').textContent = gameTimeLeft;
-        if (gameTimeLeft <= 0) endGame();
+        if (gameTimeLeft <= 0) endTypingGame();
       }, 1000);
     }
 
@@ -2287,28 +2496,38 @@
       setTimeout(function () { display.className = 'game-word-display'; }, 200);
     }
 
-    function endGame() {
+    function endTypingGame() {
       clearInterval(gameTimer);
       gameTimer = null;
       document.getElementById('game-input').disabled = true;
-      document.getElementById('game-play-screen').style.display = 'none';
-      document.getElementById('game-over-screen').style.display = '';
+      document.getElementById('typing-play-screen').style.display = 'none';
+      document.getElementById('typing-over-screen').style.display = '';
       document.getElementById('game-final-words').textContent = gameScore;
       document.getElementById('game-final-streak').textContent = gameBestStreak;
       var accuracy = gameTotalAttempts > 0 ? Math.round((gameScore / gameTotalAttempts) * 100) : 0;
       document.getElementById('game-final-accuracy').textContent = accuracy + '%';
-      document.getElementById('game-submit-btn').disabled = false;
-      document.getElementById('game-submit-btn').textContent = '\ud83d\ude80 Submit to Leaderboard';
-      document.getElementById('game-submit-status').textContent = '';
+      if (currentGameMode === 'daily') {
+        markDailyPlayed('typing');
+        document.getElementById('game-submit-btn').style.display = 'none';
+        document.getElementById('game-submit-status').textContent = 'Auto-submitting daily score\u2026';
+        document.getElementById('game-submit-status').className = 'game-submit-status';
+        submitScore();
+      } else {
+        document.getElementById('game-submit-btn').style.display = '';
+        document.getElementById('game-submit-btn').disabled = false;
+        document.getElementById('game-submit-btn').textContent = '\ud83d\ude80 Submit to Leaderboard';
+        document.getElementById('game-submit-status').textContent = '';
+      }
     }
 
-    function resetGame() {
-      document.getElementById('game-over-screen').style.display = 'none';
-      document.getElementById('game-play-screen').style.display = 'none';
-      document.getElementById('game-start-screen').style.display = '';
+    function resetTypingGame() {
+      document.getElementById('typing-over-screen').style.display = 'none';
+      document.getElementById('typing-play-screen').style.display = 'none';
+      document.getElementById('typing-start-screen').style.display = '';
+      updateDailyUI();
     }
 
-    // Listen for typing
+    // Typing input listeners
     (function () {
       var input = document.getElementById('game-input');
       if (!input) return;
@@ -2346,34 +2565,495 @@
       });
     })();
 
+    // ===== Code Quiz Game =====
+    var QUIZ_QUESTIONS = [
+      { q: 'What does "===" check in JavaScript?', opts: ['Value only', 'Value and type', 'Reference', 'Neither'], ans: 1 },
+      { q: 'Which method adds an element to the end of an array?', opts: ['shift()', 'unshift()', 'push()', 'pop()'], ans: 2 },
+      { q: 'What is the output of typeof null?', opts: ['"null"', '"undefined"', '"object"', '"boolean"'], ans: 2 },
+      { q: 'Which keyword creates a block-scoped variable?', opts: ['var', 'let', 'function', 'global'], ans: 1 },
+      { q: 'What does JSON.parse() do?', opts: ['Object to string', 'String to object', 'Array to string', 'Number to string'], ans: 1 },
+      { q: 'Which is NOT a JavaScript data type?', opts: ['symbol', 'bigint', 'float', 'undefined'], ans: 2 },
+      { q: 'What does Array.filter() return?', opts: ['A boolean', 'A single element', 'A new array', 'undefined'], ans: 2 },
+      { q: 'What is a closure?', opts: ['A loop type', 'Function + its scope', 'An error handler', 'A CSS property'], ans: 1 },
+      { q: 'Which HTTP method is idempotent?', opts: ['POST', 'PATCH', 'GET', 'None'], ans: 2 },
+      { q: 'What does "async" before a function do?', opts: ['Makes it faster', 'Returns a Promise', 'Blocks execution', 'Nothing'], ans: 1 },
+      { q: 'What is the DOM?', opts: ['A database', 'Document Object Model', 'A framework', 'A server'], ans: 1 },
+      { q: 'Which CSS unit is relative to the viewport width?', opts: ['px', 'em', 'vw', 'rem'], ans: 2 },
+      { q: 'What does git rebase do?', opts: ['Deletes branch', 'Moves commits to new base', 'Creates tag', 'Pushes to remote'], ans: 1 },
+      { q: 'Which is a valid HTTP status for "Not Found"?', opts: ['200', '301', '404', '500'], ans: 2 },
+      { q: 'What does the spread operator (...) do?', opts: ['Deletes elements', 'Expands iterables', 'Creates a loop', 'Throws error'], ans: 1 },
+      { q: 'Which method converts an array to a string?', opts: ['split()', 'join()', 'slice()', 'map()'], ans: 1 },
+      { q: 'What is the time complexity of array push?', opts: ['O(n)', 'O(1)', 'O(log n)', 'O(n\u00b2)'], ans: 1 },
+      { q: 'Which is a JavaScript runtime?', opts: ['Django', 'Node.js', 'Laravel', 'Flask'], ans: 1 },
+      { q: 'What does "use strict" enable?', opts: ['Loose mode', 'Strict error checking', 'TypeScript', 'ES5 only'], ans: 1 },
+      { q: 'Which selector has the highest CSS specificity?', opts: ['.class', '#id', 'element', '*'], ans: 1 },
+    ];
+
+    var quizState = { questions: [], current: 0, correct: 0, score: 0, startTime: 0, timer: null, playerName: '', answered: false };
+
+    function shuffleArray(arr, rng) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor((rng || Math.random)() * (i + 1));
+        var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+      }
+      return a;
+    }
+
+    function startQuizGame() {
+      var nameInput = document.getElementById('quiz-player-name');
+      quizState.playerName = (nameInput.value || '').trim();
+      if (!quizState.playerName) {
+        nameInput.focus();
+        nameInput.style.outline = '2px solid #ef4444';
+        setTimeout(function () { nameInput.style.outline = ''; }, 1500);
+        return;
+      }
+      if (currentGameMode === 'daily') {
+        if (hasDailyPlayed('quiz')) { showToast('\u26a0\ufe0f Already played today!'); return; }
+        var rng = seededRandom(getDailySeed() + 2);
+        quizState.questions = shuffleArray(QUIZ_QUESTIONS, rng).slice(0, 10);
+      } else {
+        quizState.questions = shuffleArray(QUIZ_QUESTIONS).slice(0, 10);
+      }
+      quizState.current = 0;
+      quizState.correct = 0;
+      quizState.score = 0;
+      quizState.startTime = Date.now();
+      quizState.answered = false;
+      document.getElementById('quiz-start-screen').style.display = 'none';
+      document.getElementById('quiz-over-screen').style.display = 'none';
+      document.getElementById('quiz-play-screen').style.display = '';
+      document.getElementById('quiz-correct').textContent = '0';
+      document.getElementById('quiz-feedback').textContent = '';
+      quizState.timer = setInterval(function () {
+        document.getElementById('quiz-timer').textContent = Math.floor((Date.now() - quizState.startTime) / 1000);
+      }, 500);
+      showQuizQuestion();
+    }
+
+    function showQuizQuestion() {
+      var q = quizState.questions[quizState.current];
+      document.getElementById('quiz-progress').textContent = (quizState.current + 1) + '/10';
+      document.getElementById('quiz-question').textContent = q.q;
+      document.getElementById('quiz-feedback').textContent = '';
+      quizState.answered = false;
+      var optsEl = document.getElementById('quiz-options');
+      optsEl.innerHTML = q.opts.map(function (opt, i) {
+        return '<button onclick="answerQuiz(' + i + ')" class="quiz-option-btn">' + escapeHtml(opt) + '</button>';
+      }).join('');
+    }
+
+    function answerQuiz(idx) {
+      if (quizState.answered) return;
+      quizState.answered = true;
+      var q = quizState.questions[quizState.current];
+      var btns = document.getElementById('quiz-options').querySelectorAll('.quiz-option-btn');
+      btns[q.ans].classList.add('quiz-option-btn--correct');
+      if (idx === q.ans) {
+        quizState.correct++;
+        quizState.score += 100;
+        document.getElementById('quiz-correct').textContent = quizState.correct;
+        document.getElementById('quiz-feedback').textContent = '\u2705 Correct!';
+        document.getElementById('quiz-feedback').className = 'game-feedback game-feedback--correct';
+      } else {
+        btns[idx].classList.add('quiz-option-btn--wrong');
+        document.getElementById('quiz-feedback').textContent = '\u274c Wrong!';
+        document.getElementById('quiz-feedback').className = 'game-feedback game-feedback--wrong';
+      }
+      // Disable all buttons
+      for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+      setTimeout(function () {
+        quizState.current++;
+        if (quizState.current >= 10) {
+          endQuizGame();
+        } else {
+          showQuizQuestion();
+        }
+      }, 1200);
+    }
+
+    function endQuizGame() {
+      clearInterval(quizState.timer);
+      quizState.timer = null;
+      var totalTime = Math.floor((Date.now() - quizState.startTime) / 1000);
+      // Speed bonus: faster = more points
+      var speedBonus = Math.max(0, 300 - totalTime * 3);
+      quizState.score += speedBonus;
+      document.getElementById('quiz-play-screen').style.display = 'none';
+      document.getElementById('quiz-over-screen').style.display = '';
+      document.getElementById('quiz-final-correct').textContent = quizState.correct;
+      document.getElementById('quiz-final-score').textContent = quizState.score;
+      document.getElementById('quiz-final-time').textContent = totalTime;
+      if (currentGameMode === 'daily') {
+        markDailyPlayed('quiz');
+        document.getElementById('quiz-submit-btn').style.display = 'none';
+        document.getElementById('quiz-submit-status').textContent = 'Auto-submitting daily score\u2026';
+        document.getElementById('quiz-submit-status').className = 'game-submit-status';
+        submitQuizScore();
+      } else {
+        document.getElementById('quiz-submit-btn').style.display = '';
+        document.getElementById('quiz-submit-btn').disabled = false;
+        document.getElementById('quiz-submit-btn').textContent = '\ud83d\ude80 Submit to Leaderboard';
+        document.getElementById('quiz-submit-status').textContent = '';
+      }
+    }
+
+    function resetQuizGame() {
+      document.getElementById('quiz-over-screen').style.display = 'none';
+      document.getElementById('quiz-play-screen').style.display = 'none';
+      document.getElementById('quiz-start-screen').style.display = '';
+      updateDailyUI();
+    }
+
+    function submitQuizScore() {
+      var btn = document.getElementById('quiz-submit-btn');
+      var status = document.getElementById('quiz-submit-status');
+      btn.disabled = true;
+      btn.textContent = 'Submitting\u2026';
+      var safeName = quizState.playerName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim().slice(0, 30);
+      if (!safeName) { status.textContent = 'Invalid name'; btn.disabled = false; return; }
+      var table = currentGameMode === 'daily' ? 'daily_scores' : 'scores';
+      var row = {
+        name: safeName,
+        score: quizState.score,
+        streak: quizState.correct,
+        accuracy: quizState.correct * 10,
+        game_type: 'quiz',
+      };
+      if (currentGameMode === 'daily') {
+        row.day = getTodayStr();
+        if (currentUser) row.user_id = currentUser.id;
+      }
+      supabase.from(table).insert(row)
+        .then(function (result) {
+          if (result.error) throw result.error;
+          btn.textContent = '\u2705 Submitted!';
+          status.textContent = 'Score saved!';
+          status.className = 'game-submit-status game-submit-status--ok';
+          refreshLeaderboard();
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = '\ud83d\ude80 Submit to Leaderboard';
+          status.textContent = 'Error: ' + (err.message || 'Submission failed');
+          status.className = 'game-submit-status game-submit-status--err';
+        });
+    }
+
+    // ===== Bug Hunt Game =====
+    var BUG_CHALLENGES = [
+      {
+        hint: 'This function should return the sum of two numbers.',
+        lines: ['function add(a, b) {', '  return a - b;', '}'],
+        bugLine: 1,
+        explain: 'Should be a + b, not a - b'
+      },
+      {
+        hint: 'This should log numbers 0 to 4.',
+        lines: ['for (let i = 0; i <= 5; i++) {', '  console.log(i);', '}'],
+        bugLine: 0,
+        explain: 'Condition should be i < 5 or i <= 4'
+      },
+      {
+        hint: 'This should check if a value is null.',
+        lines: ['function isNull(val) {', '  return val == undefined;', '}'],
+        bugLine: 1,
+        explain: 'Should use === null for strict null check'
+      },
+      {
+        hint: 'This should reverse a string.',
+        lines: ['function reverse(str) {', '  return str.split("").reverse().toString();', '}'],
+        bugLine: 1,
+        explain: 'Should use .join("") not .toString()'
+      },
+      {
+        hint: 'This async function should fetch and return JSON data.',
+        lines: ['async function getData(url) {', '  const res = fetch(url);', '  return res.json();', '}'],
+        bugLine: 1,
+        explain: 'Missing await before fetch(url)'
+      },
+      {
+        hint: 'This should create an array of 3 zeros.',
+        lines: ['const zeros = new Array(3);', 'zeros.map(() => 0);', 'console.log(zeros);'],
+        bugLine: 1,
+        explain: 'map returns a new array — need zeros = zeros.map() or Array(3).fill(0)'
+      },
+      {
+        hint: 'This should correctly compare two strings.',
+        lines: ['const a = "hello";', 'const b = new String("hello");', 'if (a === b) console.log("equal");'],
+        bugLine: 2,
+        explain: 'String object !== string primitive with ==='
+      },
+      {
+        hint: 'This should set a default parameter value.',
+        lines: ['function greet(name || "World") {', '  return "Hello, " + name;', '}'],
+        bugLine: 0,
+        explain: 'Default params use = not || in the signature'
+      },
+      {
+        hint: 'This should increment a counter.',
+        lines: ['let count = 0;', 'const increment = () => {', '  count++;', '  return count;', '};'],
+        bugLine: -1,
+        explain: 'No bug — this one is correct!'
+      },
+      {
+        hint: 'This should deep copy an object.',
+        lines: ['const original = { a: { b: 1 } };', 'const copy = Object.assign({}, original);', 'copy.a.b = 2;'],
+        bugLine: 1,
+        explain: 'Object.assign does shallow copy — nested objects share references'
+      },
+      {
+        hint: 'This should remove duplicates from an array.',
+        lines: ['const arr = [1, 2, 2, 3];', 'const unique = arr.filter((v, i) =>', '  arr.indexOf(v) !== i);'],
+        bugLine: 2,
+        explain: 'Should be === i (keep first occurrence), not !== i'
+      },
+      {
+        hint: 'This should check if a number is even.',
+        lines: ['function isEven(n) {', '  return n % 2 === 1;', '}'],
+        bugLine: 1,
+        explain: 'Should be === 0 for even numbers'
+      },
+    ];
+
+    var bugState = { challenges: [], current: 0, correct: 0, score: 0, startTime: 0, timer: null, playerName: '', answered: false };
+
+    function startBugGame() {
+      var nameInput = document.getElementById('bug-player-name');
+      bugState.playerName = (nameInput.value || '').trim();
+      if (!bugState.playerName) {
+        nameInput.focus();
+        nameInput.style.outline = '2px solid #ef4444';
+        setTimeout(function () { nameInput.style.outline = ''; }, 1500);
+        return;
+      }
+      if (currentGameMode === 'daily') {
+        if (hasDailyPlayed('bug')) { showToast('\u26a0\ufe0f Already played today!'); return; }
+        var rng = seededRandom(getDailySeed() + 3);
+        bugState.challenges = shuffleArray(BUG_CHALLENGES, rng).slice(0, 8);
+      } else {
+        bugState.challenges = shuffleArray(BUG_CHALLENGES).slice(0, 8);
+      }
+      bugState.current = 0;
+      bugState.correct = 0;
+      bugState.score = 0;
+      bugState.startTime = Date.now();
+      bugState.answered = false;
+      document.getElementById('bug-start-screen').style.display = 'none';
+      document.getElementById('bug-over-screen').style.display = 'none';
+      document.getElementById('bug-play-screen').style.display = '';
+      document.getElementById('bug-correct').textContent = '0';
+      document.getElementById('bug-feedback').textContent = '';
+      bugState.timer = setInterval(function () {
+        document.getElementById('bug-timer').textContent = Math.floor((Date.now() - bugState.startTime) / 1000);
+      }, 500);
+      showBugChallenge();
+    }
+
+    function showBugChallenge() {
+      var c = bugState.challenges[bugState.current];
+      document.getElementById('bug-progress').textContent = (bugState.current + 1) + '/8';
+      document.getElementById('bug-hint').textContent = c.hint;
+      document.getElementById('bug-feedback').textContent = '';
+      bugState.answered = false;
+      var codeEl = document.getElementById('bug-code');
+      var hasNoBug = c.bugLine === -1;
+      codeEl.innerHTML = c.lines.map(function (line, i) {
+        return '<div class="bug-code-line" data-line="' + i + '" onclick="answerBug(' + i + ')">' +
+          '<span class="bug-line-num">' + (i + 1) + '</span>' +
+          '<code>' + escapeHtml(line) + '</code>' +
+        '</div>';
+      }).join('') +
+      '<button onclick="answerBug(-1)" class="bug-no-bug-btn">\u2705 No Bug Here</button>';
+    }
+
+    function answerBug(lineIdx) {
+      if (bugState.answered) return;
+      bugState.answered = true;
+      var c = bugState.challenges[bugState.current];
+      var lines = document.querySelectorAll('#bug-code .bug-code-line');
+      var fb = document.getElementById('bug-feedback');
+
+      if (c.bugLine >= 0 && lines[c.bugLine]) {
+        lines[c.bugLine].classList.add('bug-code-line--bug');
+      }
+
+      if (lineIdx === c.bugLine) {
+        bugState.correct++;
+        bugState.score += 125;
+        document.getElementById('bug-correct').textContent = bugState.correct;
+        fb.textContent = '\u2705 Correct! ' + c.explain;
+        fb.className = 'game-feedback game-feedback--correct';
+      } else {
+        if (lineIdx >= 0 && lines[lineIdx]) lines[lineIdx].classList.add('bug-code-line--wrong');
+        fb.textContent = '\u274c Wrong! ' + c.explain;
+        fb.className = 'game-feedback game-feedback--wrong';
+      }
+      // Disable clicking
+      for (var i = 0; i < lines.length; i++) lines[i].style.pointerEvents = 'none';
+      var noBugBtn = document.querySelector('#bug-code .bug-no-bug-btn');
+      if (noBugBtn) noBugBtn.disabled = true;
+
+      setTimeout(function () {
+        bugState.current++;
+        if (bugState.current >= 8) {
+          endBugGame();
+        } else {
+          showBugChallenge();
+        }
+      }, 2000);
+    }
+
+    function endBugGame() {
+      clearInterval(bugState.timer);
+      bugState.timer = null;
+      var totalTime = Math.floor((Date.now() - bugState.startTime) / 1000);
+      var speedBonus = Math.max(0, 400 - totalTime * 3);
+      bugState.score += speedBonus;
+      document.getElementById('bug-play-screen').style.display = 'none';
+      document.getElementById('bug-over-screen').style.display = '';
+      document.getElementById('bug-final-correct').textContent = bugState.correct;
+      document.getElementById('bug-final-score').textContent = bugState.score;
+      document.getElementById('bug-final-time').textContent = totalTime;
+      if (currentGameMode === 'daily') {
+        markDailyPlayed('bug');
+        document.getElementById('bug-submit-btn').style.display = 'none';
+        document.getElementById('bug-submit-status').textContent = 'Auto-submitting daily score\u2026';
+        document.getElementById('bug-submit-status').className = 'game-submit-status';
+        submitBugScore();
+      } else {
+        document.getElementById('bug-submit-btn').style.display = '';
+        document.getElementById('bug-submit-btn').disabled = false;
+        document.getElementById('bug-submit-btn').textContent = '\ud83d\ude80 Submit to Leaderboard';
+        document.getElementById('bug-submit-status').textContent = '';
+      }
+    }
+
+    function resetBugGame() {
+      document.getElementById('bug-over-screen').style.display = 'none';
+      document.getElementById('bug-play-screen').style.display = 'none';
+      document.getElementById('bug-start-screen').style.display = '';
+      updateDailyUI();
+    }
+
+    function submitBugScore() {
+      var btn = document.getElementById('bug-submit-btn');
+      var status = document.getElementById('bug-submit-status');
+      btn.disabled = true;
+      btn.textContent = 'Submitting\u2026';
+      var safeName = bugState.playerName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim().slice(0, 30);
+      if (!safeName) { status.textContent = 'Invalid name'; btn.disabled = false; return; }
+      var table = currentGameMode === 'daily' ? 'daily_scores' : 'scores';
+      var row = {
+        name: safeName,
+        score: bugState.score,
+        streak: bugState.correct,
+        accuracy: Math.round(bugState.correct / 8 * 100),
+        game_type: 'bug',
+      };
+      if (currentGameMode === 'daily') {
+        row.day = getTodayStr();
+        if (currentUser) row.user_id = currentUser.id;
+      }
+      supabase.from(table).insert(row)
+        .then(function (result) {
+          if (result.error) throw result.error;
+          btn.textContent = '\u2705 Submitted!';
+          status.textContent = 'Score saved!';
+          status.className = 'game-submit-status game-submit-status--ok';
+          refreshLeaderboard();
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = '\ud83d\ude80 Submit to Leaderboard';
+          status.textContent = 'Error: ' + (err.message || 'Submission failed');
+          status.className = 'game-submit-status game-submit-status--err';
+        });
+    }
+
     // ===== Leaderboard (Supabase) =====
+    function setLeaderboardFilter(filter) {
+      leaderboardFilter = filter;
+      document.getElementById('lb-filter-all').classList.toggle('lb-filter-btn--active', filter === 'all');
+      document.getElementById('lb-filter-friends').classList.toggle('lb-filter-btn--active', filter === 'friends');
+      refreshLeaderboard();
+    }
+
     function refreshLeaderboard() {
       var content = document.getElementById('leaderboard-content');
       content.innerHTML = '<p class="leaderboard-empty">Loading leaderboard\u2026</p>';
-      supabase
-        .from('scores')
-        .select('name, score, streak, accuracy, created_at')
-        .order('score', { ascending: false })
-        .order('streak', { ascending: false })
-        .limit(50)
-        .then(function (result) {
+
+      var table = currentGameMode === 'daily' ? 'daily_scores' : 'scores';
+      var gameType = currentGameType;
+      var isTyping = gameType === 'typing';
+
+      var query;
+      if (currentGameMode === 'daily') {
+        query = supabase.from(table)
+          .select('name, score, streak, accuracy, created_at, user_id, game_type, day')
+          .eq('game_type', gameType)
+          .eq('day', getTodayStr())
+          .order('score', { ascending: false })
+          .limit(50);
+      } else {
+        // Practice mode — scores table might not have game_type for old entries
+        if (isTyping) {
+          query = supabase.from(table)
+            .select('name, score, streak, accuracy, created_at, game_type')
+            .or('game_type.is.null,game_type.eq.typing')
+            .order('score', { ascending: false })
+            .order('streak', { ascending: false })
+            .limit(50);
+        } else {
+          query = supabase.from(table)
+            .select('name, score, streak, accuracy, created_at, game_type')
+            .eq('game_type', gameType)
+            .order('score', { ascending: false })
+            .limit(50);
+        }
+      }
+
+      query.then(function (result) {
           if (result.error) throw result.error;
-          renderLeaderboard(result.data || []);
+          var scores = result.data || [];
+          // Friends filter
+          if (leaderboardFilter === 'friends' && currentUser) {
+            return supabase.from('friends')
+              .select('requester_id, addressee_id')
+              .or('requester_id.eq.' + currentUser.id + ',addressee_id.eq.' + currentUser.id)
+              .eq('status', 'accepted')
+              .then(function (fr) {
+                var friendIds = {};
+                friendIds[currentUser.id] = true;
+                (fr.data || []).forEach(function (f) {
+                  friendIds[f.requester_id] = true;
+                  friendIds[f.addressee_id] = true;
+                });
+                if (currentGameMode === 'daily') {
+                  scores = scores.filter(function (s) { return s.user_id && friendIds[s.user_id]; });
+                }
+                renderLeaderboard(scores, isTyping);
+              });
+          }
+          renderLeaderboard(scores, isTyping);
         })
         .catch(function () {
           content.innerHTML = '<p class="leaderboard-empty">Could not load leaderboard.</p>';
         });
     }
 
-    function renderLeaderboard(scores) {
+    function renderLeaderboard(scores, isTyping) {
       var content = document.getElementById('leaderboard-content');
       if (!scores.length) {
         content.innerHTML = '<p class="leaderboard-empty">No scores yet. Play and submit yours!</p>';
         return;
       }
       var medals = ['\ud83e\udd47', '\ud83e\udd48', '\ud83e\udd49'];
+      var scoreLabel = isTyping ? 'words' : 'pts';
+      var col3Label = isTyping ? 'Streak' : 'Correct';
       var html = '<table class="leaderboard-table"><thead><tr>' +
-        '<th>#</th><th>Player</th><th>Score</th><th>Streak</th><th>Date</th>' +
+        '<th>#</th><th>Player</th><th>Score</th><th>' + col3Label + '</th><th>Date</th>' +
         '</tr></thead><tbody>';
       scores.slice(0, 50).forEach(function (s, i) {
         var rank = medals[i] || (i + 1);
@@ -2382,7 +3062,7 @@
         html += '<tr class="' + (i < 3 ? 'leaderboard-row--top' : '') + '">' +
           '<td>' + rank + '</td>' +
           '<td>' + escapeHtml(s.name) + '</td>' +
-          '<td><strong>' + s.score + '</strong> words</td>' +
+          '<td><strong>' + s.score + '</strong> ' + scoreLabel + '</td>' +
           '<td>' + (s.streak || 0) + '</td>' +
           '<td>' + dateStr + '</td>' +
           '</tr>';
@@ -2401,14 +3081,20 @@
       var safeName = gamePlayerName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim().slice(0, 30);
       if (!safeName) { status.textContent = 'Invalid name'; btn.disabled = false; return; }
 
-      supabase
-        .from('scores')
-        .insert({
-          name: safeName,
-          score: gameScore,
-          streak: gameBestStreak,
-          accuracy: gameTotalAttempts > 0 ? Math.round((gameScore / gameTotalAttempts) * 100) : 0,
-        })
+      var table = currentGameMode === 'daily' ? 'daily_scores' : 'scores';
+      var row = {
+        name: safeName,
+        score: gameScore,
+        streak: gameBestStreak,
+        accuracy: gameTotalAttempts > 0 ? Math.round((gameScore / gameTotalAttempts) * 100) : 0,
+        game_type: 'typing',
+      };
+      if (currentGameMode === 'daily') {
+        row.day = getTodayStr();
+        if (currentUser) row.user_id = currentUser.id;
+      }
+
+      supabase.from(table).insert(row)
         .then(function (result) {
           if (result.error) throw result.error;
           btn.textContent = '\u2705 Submitted!';
