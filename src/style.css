@@ -1597,6 +1597,460 @@
   text-decoration: underline;
 }
 
+/* ===== Social Sub-navigation ===== */
+
+.social-sub-nav {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  background: rgb(23, 23, 23);
+  border-radius: 9999px;
+  padding: 0.3rem;
+  outline: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.social-sub-nav-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+
+.social-sub-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.social-sub-nav-btn--active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.social-sub-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 9999px;
+  padding: 0 5px;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
+/* ===== Social Section Title ===== */
+
+.social-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0.75rem 0 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Friends List ===== */
+
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.friend-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgb(23, 23, 23);
+  border-radius: 1rem;
+  outline: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 0.9rem 1.1rem;
+}
+
+.friend-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.friend-card-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgb(38, 38, 38);
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.friend-card-info {
+  min-width: 0;
+}
+
+.friend-card-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-card-handle {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.friend-card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.friend-accept-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  border: none;
+  background: #22c55e;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.friend-accept-btn:hover { opacity: 0.85; }
+
+.friend-reject-btn {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.friend-reject-btn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #ef4444;
+}
+
+.friend-message-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.friend-message-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ===== User Profile Action Buttons ===== */
+
+.up-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.up-friend-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.up-friend-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.up-friend-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.up-friend-btn--friends {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.up-friend-btn--pending {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.25);
+  color: #facc15;
+}
+
+.up-friend-btn--accept {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.up-message-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.up-message-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+/* ===== Direct Messages ===== */
+
+.dm-conversations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dm-convo-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgb(23, 23, 23);
+  border-radius: 1rem;
+  outline: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dm-convo-card:hover {
+  background: rgb(30, 30, 30);
+}
+
+.dm-convo-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgb(38, 38, 38);
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.dm-convo-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dm-convo-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.15rem;
+}
+
+.dm-convo-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.dm-convo-time {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.dm-convo-preview {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dm-convo-preview--unread {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.dm-convo-unread-dot {
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ===== DM Chat ===== */
+
+.dm-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgb(23, 23, 23);
+  border-radius: 1rem;
+  outline: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.dm-chat-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgb(38, 38, 38);
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.dm-chat-header-info {
+  min-width: 0;
+}
+
+.dm-chat-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.dm-chat-handle {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dm-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 450px;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+}
+
+.dm-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 75%;
+}
+
+.dm-msg--own {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.dm-msg--other {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.dm-msg-bubble {
+  padding: 0.55rem 0.9rem;
+  border-radius: 1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.dm-msg--own .dm-msg-bubble {
+  background: #3b82f6;
+  color: #fff;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.dm-msg--other .dm-msg-bubble {
+  background: rgb(38, 38, 38);
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom-left-radius: 0.25rem;
+}
+
+.dm-msg-time {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.25);
+  margin-top: 0.15rem;
+  padding: 0 0.3rem;
+}
+
+.dm-chat-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dm-chat-input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(23, 23, 23);
+  color: #fff;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.dm-chat-input:focus {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.dm-chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.dm-send-btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 9999px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.dm-send-btn:hover {
+  opacity: 0.85;
+}
+
 /* ===== Post Composer ===== */
 
 .post-composer {
@@ -2225,6 +2679,108 @@
   color: rgba(0, 0, 0, 0.5);
 }
 
+[data-theme="light"] .social-sub-nav {
+  background: #fff;
+  outline-color: rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="light"] .social-sub-nav-btn {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .social-sub-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="light"] .social-sub-nav-btn--active {
+  background: rgba(0, 0, 0, 0.07);
+  color: #111;
+}
+
+[data-theme="light"] .social-section-title {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .friend-card,
+[data-theme="light"] .dm-convo-card,
+[data-theme="light"] .dm-chat-header {
+  background: #fff;
+  outline-color: rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="light"] .dm-convo-card:hover {
+  background: #f9f9f9;
+}
+
+[data-theme="light"] .friend-card-avatar,
+[data-theme="light"] .dm-convo-avatar,
+[data-theme="light"] .dm-chat-avatar {
+  background: #f0f0f0;
+  outline-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .friend-card-name,
+[data-theme="light"] .dm-convo-name,
+[data-theme="light"] .dm-chat-name {
+  color: #111;
+}
+
+[data-theme="light"] .friend-card-handle,
+[data-theme="light"] .dm-convo-time,
+[data-theme="light"] .dm-chat-handle {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .dm-convo-preview {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .dm-convo-preview--unread {
+  color: #111;
+}
+
+[data-theme="light"] .friend-reject-btn,
+[data-theme="light"] .friend-message-btn {
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .friend-message-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #111;
+}
+
+[data-theme="light"] .up-friend-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #111;
+}
+
+[data-theme="light"] .up-message-btn {
+  border-color: rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+[data-theme="light"] .dm-msg--other .dm-msg-bubble {
+  background: #f0f0f0;
+  color: #111;
+}
+
+[data-theme="light"] .dm-msg-time {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .dm-chat-input {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #111;
+}
+
+[data-theme="light"] .dm-chat-input::placeholder {
+  color: rgba(0, 0, 0, 0.25);
+}
+
 [data-theme="light"] .social-profile-card,
 [data-theme="light"] .post-composer,
 [data-theme="light"] .post-card {
@@ -2436,6 +2992,44 @@
 
 [data-theme="goofy"] .user-profile-section-title {
   font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .social-sub-nav {
+  background: rgba(0, 0, 0, 0.25);
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+[data-theme="goofy"] .social-sub-nav-btn {
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .social-section-title {
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .friend-card,
+[data-theme="goofy"] .dm-convo-card,
+[data-theme="goofy"] .dm-chat-header {
+  background: rgba(0, 0, 0, 0.25);
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 1.5rem;
+}
+
+[data-theme="goofy"] .friend-card-name,
+[data-theme="goofy"] .dm-convo-name,
+[data-theme="goofy"] .dm-chat-name {
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .dm-send-btn {
+  font-family: 'Comic Sans MS', cursive;
+  animation: btnBounce 1.4s ease-in-out infinite;
+}
+
+[data-theme="goofy"] .dm-chat-input {
+  font-family: 'Comic Sans MS', cursive;
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 [data-theme="goofy"] .social-profile-card,

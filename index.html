@@ -144,6 +144,7 @@
           <p id="profile-bio-text" class="social-profile-bio">No bio yet.</p>
           <div class="social-profile-stats">
             <span id="profile-posts-count" class="social-profile-stat"><strong>0</strong> Posts</span>
+            <span id="profile-friends-count" class="social-profile-stat"><strong>0</strong> Friends</span>
           </div>
         </div>
         <div class="social-profile-actions">
@@ -151,6 +152,16 @@
           <button onclick="socialSignOut()" class="social-signout-btn">Sign Out</button>
         </div>
       </div>
+
+      <!-- Sub-navigation -->
+      <div class="social-sub-nav">
+        <button id="social-subnav-feed" onclick="switchSocialTab('feed')" class="social-sub-nav-btn social-sub-nav-btn--active">📱 Feed</button>
+        <button id="social-subnav-friends" onclick="switchSocialTab('friends')" class="social-sub-nav-btn">👥 Friends<span id="friend-requests-badge" class="social-sub-nav-badge" style="display:none">0</span></button>
+        <button id="social-subnav-messages" onclick="switchSocialTab('messages')" class="social-sub-nav-btn">💬 Messages<span id="unread-badge" class="social-sub-nav-badge" style="display:none">0</span></button>
+      </div>
+
+      <!-- Feed Section -->
+      <div id="social-tab-feed">
 
       <!-- Post Composer -->
       <div class="post-composer">
@@ -180,6 +191,52 @@
         <div class="social-feed-empty">No posts yet.<br>Share your first screenshot with the community!</div>
       </div>
 
+      </div><!-- /#social-tab-feed -->
+
+      <!-- Friends Section -->
+      <div id="social-tab-friends" style="display:none">
+
+        <!-- Pending Requests -->
+        <div id="friend-requests-section" style="display:none">
+          <h3 class="social-section-title">Friend Requests</h3>
+          <div id="friend-requests-list" class="friends-list"></div>
+        </div>
+
+        <!-- Friends List -->
+        <h3 class="social-section-title">Your Friends</h3>
+        <div id="friends-list" class="friends-list">
+          <div class="social-feed-empty">No friends yet.<br>Visit someone's profile and send a friend request!</div>
+        </div>
+
+      </div><!-- /#social-tab-friends -->
+
+      <!-- Messages Section -->
+      <div id="social-tab-messages" style="display:none">
+
+        <!-- Conversations list -->
+        <div id="dm-conversations" class="dm-conversations">
+          <div class="social-feed-empty">No conversations yet.<br>Send a message to a friend!</div>
+        </div>
+
+        <!-- Active chat -->
+        <div id="dm-chat" style="display:none">
+          <button onclick="closeDmChat()" class="user-profile-back-btn">← Back to Messages</button>
+          <div class="dm-chat-header">
+            <div class="dm-chat-avatar" id="dm-chat-avatar">🧑‍💻</div>
+            <div class="dm-chat-header-info">
+              <div class="dm-chat-name" id="dm-chat-name"></div>
+              <div class="dm-chat-handle" id="dm-chat-handle"></div>
+            </div>
+          </div>
+          <div id="dm-chat-messages" class="dm-chat-messages"></div>
+          <div class="dm-chat-input-row">
+            <input type="text" id="dm-chat-input" class="dm-chat-input" placeholder="Type a message…" maxlength="1000" autocomplete="off" />
+            <button onclick="sendDm()" class="dm-send-btn">Send</button>
+          </div>
+        </div>
+
+      </div><!-- /#social-tab-messages -->
+
     </div>
 
     <!-- User Profile View (overlay inside social panel) -->
@@ -196,6 +253,10 @@
           <div class="social-profile-stats">
             <span id="up-posts-count" class="social-profile-stat"></span>
             <span id="up-joined" class="social-profile-stat"></span>
+          </div>
+          <div id="up-actions" class="up-actions" style="display:none; margin-top:0.5rem">
+            <button id="up-friend-btn" onclick="toggleFriendRequest()" class="up-friend-btn">👋 Add Friend</button>
+            <button id="up-message-btn" onclick="openDmFromProfile()" class="up-message-btn" style="display:none">💬 Message</button>
           </div>
         </div>
       </div>
@@ -543,7 +604,7 @@
       if (key === 'social') {
         if (currentUser) {
           renderSocialProfile();
-          loadFeed();
+          switchSocialTab(currentSocialTab || 'feed');
           renderAttachStrip();
         }
       }
@@ -1272,6 +1333,9 @@
           renderSocialProfile();
           loadFeed();
           renderAttachStrip();
+          loadFriendsCount();
+          loadFriendRequests();
+          loadConversations();
         });
     }
 
@@ -1556,7 +1620,10 @@
     }
 
     // ===== User Profile View =====
+    var viewingProfileUserId = null;
+
     function openUserProfile(userId) {
+      viewingProfileUserId = userId;
       var profileView = document.getElementById('user-profile-view');
       var socialMain = document.getElementById('social-main');
       var socialAuth = document.getElementById('social-auth');
@@ -1571,6 +1638,9 @@
       document.getElementById('up-posts-count').textContent = '';
       document.getElementById('up-joined').textContent = '';
       document.getElementById('up-feed').innerHTML = '<div class="social-feed-empty">Loading posts\u2026</div>';
+      document.getElementById('up-actions').style.display = 'none';
+      document.getElementById('up-friend-btn').style.display = 'none';
+      document.getElementById('up-message-btn').style.display = 'none';
 
       supabase.from('profiles').select('*').eq('id', userId).single()
         .then(function (result) {
@@ -1586,6 +1656,12 @@
           if (p.created_at) {
             document.getElementById('up-joined').innerHTML = 'Joined <strong>' +
               new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) + '</strong>';
+          }
+
+          // Show friend actions if not viewing own profile
+          if (currentUser && userId !== currentUser.id) {
+            document.getElementById('up-actions').style.display = '';
+            loadFriendStatus(userId);
           }
 
           return supabase.from('posts')
@@ -1615,6 +1691,92 @@
               renderUserProfileFeed(posts);
             });
         });
+    }
+
+    function loadFriendStatus(userId) {
+      var btn = document.getElementById('up-friend-btn');
+      var msgBtn = document.getElementById('up-message-btn');
+      btn.disabled = true;
+      btn.textContent = '\u23f3 Loading\u2026';
+      btn.style.display = '';
+      supabase.from('friends')
+        .select('*')
+        .or('and(requester_id.eq.' + currentUser.id + ',addressee_id.eq.' + userId + '),and(requester_id.eq.' + userId + ',addressee_id.eq.' + currentUser.id + ')')
+        .then(function (result) {
+          var rows = (result.data || []);
+          var friend = rows[0];
+          btn.disabled = false;
+          if (!friend) {
+            btn.textContent = '\ud83d\udc4b Add Friend';
+            btn.className = 'up-friend-btn';
+            msgBtn.style.display = 'none';
+          } else if (friend.status === 'accepted') {
+            btn.textContent = '\u2705 Friends';
+            btn.className = 'up-friend-btn up-friend-btn--friends';
+            msgBtn.style.display = '';
+          } else if (friend.status === 'pending' && friend.requester_id === currentUser.id) {
+            btn.textContent = '\u23f3 Request Sent';
+            btn.className = 'up-friend-btn up-friend-btn--pending';
+            msgBtn.style.display = 'none';
+          } else if (friend.status === 'pending' && friend.addressee_id === currentUser.id) {
+            btn.textContent = '\u2705 Accept Request';
+            btn.className = 'up-friend-btn up-friend-btn--accept';
+            msgBtn.style.display = 'none';
+          }
+        });
+    }
+
+    function toggleFriendRequest() {
+      if (!currentUser || !viewingProfileUserId) return;
+      var userId = viewingProfileUserId;
+      var btn = document.getElementById('up-friend-btn');
+      var currentText = btn.textContent;
+
+      if (currentText.indexOf('Add Friend') !== -1) {
+        btn.disabled = true;
+        supabase.from('friends').insert({ requester_id: currentUser.id, addressee_id: userId })
+          .then(function (r) {
+            if (r.error) { showToast('\u26a0\ufe0f ' + (r.error.message || 'Could not send request')); btn.disabled = false; return; }
+            showToast('\ud83d\udc4b Friend request sent!');
+            loadFriendStatus(userId);
+          });
+      } else if (currentText.indexOf('Accept') !== -1) {
+        btn.disabled = true;
+        supabase.from('friends')
+          .update({ status: 'accepted' })
+          .eq('requester_id', userId)
+          .eq('addressee_id', currentUser.id)
+          .then(function (r) {
+            if (r.error) { showToast('\u26a0\ufe0f Could not accept'); btn.disabled = false; return; }
+            showToast('\ud83c\udf89 You are now friends!');
+            loadFriendStatus(userId);
+            loadFriendsCount();
+          });
+      } else if (currentText.indexOf('Friends') !== -1) {
+        // Unfriend
+        btn.disabled = true;
+        supabase.from('friends')
+          .delete()
+          .or('and(requester_id.eq.' + currentUser.id + ',addressee_id.eq.' + userId + '),and(requester_id.eq.' + userId + ',addressee_id.eq.' + currentUser.id + ')')
+          .then(function (r) {
+            if (r.error) { showToast('\u26a0\ufe0f Could not unfriend'); btn.disabled = false; return; }
+            showToast('Unfriended.');
+            loadFriendStatus(userId);
+            loadFriendsCount();
+          });
+      } else if (currentText.indexOf('Request Sent') !== -1) {
+        // Cancel request
+        btn.disabled = true;
+        supabase.from('friends')
+          .delete()
+          .eq('requester_id', currentUser.id)
+          .eq('addressee_id', userId)
+          .then(function (r) {
+            if (r.error) { showToast('\u26a0\ufe0f Could not cancel'); btn.disabled = false; return; }
+            showToast('Request cancelled.');
+            loadFriendStatus(userId);
+          });
+      }
     }
 
     function renderUserProfileFeed(posts) {
@@ -1660,13 +1822,314 @@
 
     function closeUserProfile() {
       document.getElementById('user-profile-view').style.display = 'none';
+      viewingProfileUserId = null;
       if (currentUser) {
         document.getElementById('social-main').style.display = '';
-        loadFeed();
       } else {
         document.getElementById('social-auth').style.display = '';
       }
     }
+
+    // ===== Social Sub-tabs (Feed / Friends / Messages) =====
+    var currentSocialTab = 'feed';
+
+    function switchSocialTab(tab) {
+      currentSocialTab = tab;
+      var tabs = ['feed', 'friends', 'messages'];
+      tabs.forEach(function (t) {
+        var panel = document.getElementById('social-tab-' + t);
+        var btn = document.getElementById('social-subnav-' + t);
+        if (panel) panel.style.display = t === tab ? '' : 'none';
+        if (btn) {
+          if (t === tab) btn.classList.add('social-sub-nav-btn--active');
+          else btn.classList.remove('social-sub-nav-btn--active');
+        }
+      });
+      if (tab === 'feed') { loadFeed(); }
+      if (tab === 'friends') { loadFriends(); }
+      if (tab === 'messages') { loadConversations(); }
+    }
+
+    // ===== Friends =====
+    function loadFriendsCount() {
+      if (!currentUser) return;
+      supabase.from('friends')
+        .select('id', { count: 'exact', head: true })
+        .or('requester_id.eq.' + currentUser.id + ',addressee_id.eq.' + currentUser.id)
+        .eq('status', 'accepted')
+        .then(function (r) {
+          var el = document.getElementById('profile-friends-count');
+          if (el) el.innerHTML = '<strong>' + (r.count || 0) + '</strong> Friends';
+        });
+    }
+
+    function loadFriendRequests() {
+      if (!currentUser) return;
+      supabase.from('friends')
+        .select('*, profiles!friends_requester_id_fkey(id, name, handle, avatar)')
+        .eq('addressee_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .then(function (r) {
+          var requests = r.data || [];
+          var badge = document.getElementById('friend-requests-badge');
+          var section = document.getElementById('friend-requests-section');
+          if (requests.length > 0) {
+            if (badge) { badge.textContent = requests.length; badge.style.display = ''; }
+            if (section) section.style.display = '';
+            var list = document.getElementById('friend-requests-list');
+            if (list) {
+              list.innerHTML = requests.map(function (req) {
+                var p = req.profiles || { name: 'Unknown', handle: '@unknown', avatar: '\ud83e\uddd1\u200d\ud83d\udcbb' };
+                return '<div class="friend-card">' +
+                  '<div class="friend-card-left" onclick="openUserProfile(\'' + p.id + '\')" style="cursor:pointer">' +
+                    '<div class="friend-card-avatar">' + escapeHtml(p.avatar) + '</div>' +
+                    '<div class="friend-card-info">' +
+                      '<div class="friend-card-name">' + escapeHtml(p.name) + '</div>' +
+                      '<div class="friend-card-handle">' + escapeHtml(p.handle) + '</div>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="friend-card-actions">' +
+                    '<button onclick="acceptFriendRequest(\'' + req.requester_id + '\')" class="friend-accept-btn">\u2705 Accept</button>' +
+                    '<button onclick="rejectFriendRequest(\'' + req.requester_id + '\')" class="friend-reject-btn">\u274c</button>' +
+                  '</div>' +
+                '</div>';
+              }).join('');
+            }
+          } else {
+            if (badge) badge.style.display = 'none';
+            if (section) section.style.display = 'none';
+          }
+        });
+    }
+
+    function loadFriends() {
+      if (!currentUser) return;
+      loadFriendRequests();
+      supabase.from('friends')
+        .select('*, requester:profiles!friends_requester_id_fkey(id, name, handle, avatar), addressee:profiles!friends_addressee_id_fkey(id, name, handle, avatar)')
+        .or('requester_id.eq.' + currentUser.id + ',addressee_id.eq.' + currentUser.id)
+        .eq('status', 'accepted')
+        .order('created_at', { ascending: false })
+        .then(function (r) {
+          var friends = (r.data || []).map(function (f) {
+            return f.requester_id === currentUser.id ? f.addressee : f.requester;
+          });
+          var list = document.getElementById('friends-list');
+          if (!list) return;
+          if (friends.length === 0) {
+            list.innerHTML = '<div class="social-feed-empty">No friends yet.<br>Visit someone\'s profile and send a friend request!</div>';
+            return;
+          }
+          list.innerHTML = friends.map(function (p) {
+            return '<div class="friend-card">' +
+              '<div class="friend-card-left" onclick="openUserProfile(\'' + p.id + '\')" style="cursor:pointer">' +
+                '<div class="friend-card-avatar">' + escapeHtml(p.avatar) + '</div>' +
+                '<div class="friend-card-info">' +
+                  '<div class="friend-card-name">' + escapeHtml(p.name) + '</div>' +
+                  '<div class="friend-card-handle">' + escapeHtml(p.handle) + '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="friend-card-actions">' +
+                '<button onclick="openDmWith(\'' + p.id + '\')" class="friend-message-btn">\ud83d\udcac Message</button>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        });
+    }
+
+    function acceptFriendRequest(requesterId) {
+      supabase.from('friends')
+        .update({ status: 'accepted' })
+        .eq('requester_id', requesterId)
+        .eq('addressee_id', currentUser.id)
+        .then(function (r) {
+          if (r.error) { showToast('\u26a0\ufe0f Could not accept'); return; }
+          showToast('\ud83c\udf89 Friend request accepted!');
+          loadFriends();
+          loadFriendsCount();
+        });
+    }
+
+    function rejectFriendRequest(requesterId) {
+      supabase.from('friends')
+        .delete()
+        .eq('requester_id', requesterId)
+        .eq('addressee_id', currentUser.id)
+        .then(function (r) {
+          if (r.error) { showToast('\u26a0\ufe0f Could not reject'); return; }
+          showToast('Request declined.');
+          loadFriends();
+        });
+    }
+
+    // ===== Direct Messages =====
+    var dmPartnerId = null;
+    var dmPartnerProfile = null;
+    var dmPollTimer = null;
+
+    function loadConversations() {
+      if (!currentUser) return;
+      // Get all messages involving current user, grouped by partner
+      supabase.from('messages')
+        .select('*, sender:profiles!messages_sender_id_fkey(id, name, handle, avatar), receiver:profiles!messages_receiver_id_fkey(id, name, handle, avatar)')
+        .or('sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+        .then(function (r) {
+          var msgs = r.data || [];
+          // Group by conversation partner, keep latest message
+          var convos = {};
+          var unreadTotal = 0;
+          msgs.forEach(function (m) {
+            var partnerId = m.sender_id === currentUser.id ? m.receiver_id : m.sender_id;
+            var partner = m.sender_id === currentUser.id ? m.receiver : m.sender;
+            if (!convos[partnerId]) {
+              convos[partnerId] = { partner: partner, lastMessage: m, unread: 0 };
+            }
+            if (!m.read && m.receiver_id === currentUser.id) {
+              convos[partnerId].unread++;
+              unreadTotal++;
+            }
+          });
+          var sorted = Object.keys(convos).map(function (k) { return convos[k]; });
+          sorted.sort(function (a, b) { return new Date(b.lastMessage.created_at) - new Date(a.lastMessage.created_at); });
+
+          // Update badge
+          var badge = document.getElementById('unread-badge');
+          if (unreadTotal > 0) { badge.textContent = unreadTotal; badge.style.display = ''; }
+          else { badge.style.display = 'none'; }
+
+          var container = document.getElementById('dm-conversations');
+          if (sorted.length === 0) {
+            container.innerHTML = '<div class="social-feed-empty">No conversations yet.<br>Send a message to a friend!</div>';
+            return;
+          }
+          container.innerHTML = sorted.map(function (c) {
+            var p = c.partner || { name: 'Unknown', avatar: '\ud83e\uddd1\u200d\ud83d\udcbb' };
+            var preview = c.lastMessage.text;
+            if (preview.length > 60) preview = preview.substring(0, 60) + '\u2026';
+            var isOwn = c.lastMessage.sender_id === currentUser.id;
+            return '<div class="dm-convo-card" onclick="openDmWith(\'' + p.id + '\')">' +
+              '<div class="dm-convo-avatar">' + escapeHtml(p.avatar) + '</div>' +
+              '<div class="dm-convo-info">' +
+                '<div class="dm-convo-name-row">' +
+                  '<span class="dm-convo-name">' + escapeHtml(p.name) + '</span>' +
+                  '<span class="dm-convo-time">' + timeAgo(c.lastMessage.created_at) + '</span>' +
+                '</div>' +
+                '<div class="dm-convo-preview' + (c.unread > 0 ? ' dm-convo-preview--unread' : '') + '">' +
+                  (isOwn ? 'You: ' : '') + escapeHtml(preview) +
+                '</div>' +
+              '</div>' +
+              (c.unread > 0 ? '<div class="dm-convo-unread-dot"></div>' : '') +
+            '</div>';
+          }).join('');
+        });
+    }
+
+    function openDmWith(partnerId) {
+      dmPartnerId = partnerId;
+      document.getElementById('dm-conversations').style.display = 'none';
+      document.getElementById('dm-chat').style.display = '';
+      document.getElementById('dm-chat-messages').innerHTML = '<div class="social-feed-empty">Loading\u2026</div>';
+      document.getElementById('dm-chat-input').value = '';
+
+      supabase.from('profiles').select('*').eq('id', partnerId).single()
+        .then(function (r) {
+          dmPartnerProfile = r.data;
+          var p = r.data || { name: 'Unknown', handle: '@unknown', avatar: '\ud83e\uddd1\u200d\ud83d\udcbb' };
+          document.getElementById('dm-chat-avatar').textContent = p.avatar || '\ud83e\uddd1\u200d\ud83d\udcbb';
+          document.getElementById('dm-chat-name').textContent = p.name;
+          document.getElementById('dm-chat-handle').textContent = p.handle;
+          loadDmMessages();
+          startDmPolling();
+        });
+    }
+
+    function openDmFromProfile() {
+      if (!viewingProfileUserId) return;
+      closeUserProfile();
+      switchSocialTab('messages');
+      setTimeout(function () { openDmWith(viewingProfileUserId); }, 100);
+    }
+
+    function closeDmChat() {
+      stopDmPolling();
+      dmPartnerId = null;
+      dmPartnerProfile = null;
+      document.getElementById('dm-chat').style.display = 'none';
+      document.getElementById('dm-conversations').style.display = '';
+      loadConversations();
+    }
+
+    function loadDmMessages() {
+      if (!currentUser || !dmPartnerId) return;
+      supabase.from('messages')
+        .select('*')
+        .or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + dmPartnerId + '),and(sender_id.eq.' + dmPartnerId + ',receiver_id.eq.' + currentUser.id + ')')
+        .order('created_at', { ascending: true })
+        .limit(200)
+        .then(function (r) {
+          var msgs = r.data || [];
+          var container = document.getElementById('dm-chat-messages');
+          if (msgs.length === 0) {
+            container.innerHTML = '<div class="social-feed-empty">No messages yet. Say hi! \ud83d\udc4b</div>';
+          } else {
+            container.innerHTML = msgs.map(function (m) {
+              var isOwn = m.sender_id === currentUser.id;
+              return '<div class="dm-msg ' + (isOwn ? 'dm-msg--own' : 'dm-msg--other') + '">' +
+                '<div class="dm-msg-bubble">' + escapeHtml(m.text) + '</div>' +
+                '<div class="dm-msg-time">' + timeAgo(m.created_at) + '</div>' +
+              '</div>';
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+          }
+          // Mark unread messages as read
+          var unreadIds = msgs.filter(function (m) { return !m.read && m.receiver_id === currentUser.id; }).map(function (m) { return m.id; });
+          if (unreadIds.length > 0) {
+            supabase.from('messages').update({ read: true }).in('id', unreadIds).then(function () {
+              loadConversations(); // refresh badges
+            });
+          }
+        });
+    }
+
+    function sendDm() {
+      if (!currentUser || !dmPartnerId) return;
+      var input = document.getElementById('dm-chat-input');
+      var text = (input.value || '').trim();
+      if (!text) return;
+      input.value = '';
+      supabase.from('messages').insert({ sender_id: currentUser.id, receiver_id: dmPartnerId, text: text })
+        .then(function (r) {
+          if (r.error) { showToast('\u26a0\ufe0f Could not send message'); return; }
+          loadDmMessages();
+        });
+    }
+
+    function startDmPolling() {
+      stopDmPolling();
+      dmPollTimer = setInterval(function () {
+        if (dmPartnerId) loadDmMessages();
+      }, 5000);
+    }
+
+    function stopDmPolling() {
+      if (dmPollTimer) { clearInterval(dmPollTimer); dmPollTimer = null; }
+    }
+
+    // DM input: send on Enter
+    (function () {
+      var chatInput = document.getElementById('dm-chat-input');
+      if (chatInput) {
+        chatInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendDm();
+          }
+        });
+      }
+    })();
 
     // ===== Profile Editor =====
     function openProfileEditor() {
