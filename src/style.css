@@ -3059,6 +3059,108 @@
   font-family: 'Comic Sans MS', cursive;
 }
 
+/* ===== Game Selector & Mode ===== */
+
+.game-selector {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.game-sel-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.65rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.game-sel-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.game-sel-btn--active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #fff;
+}
+
+.game-sel-icon { font-size: 1.25rem; }
+.game-sel-label { font-weight: 600; }
+
+.game-mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.game-mode-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.45rem 1.2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.game-mode-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.game-mode-btn--active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.daily-played-badge {
+  display: inline-block;
+  background: #22c55e;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.daily-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+.daily-info-date {
+  font-weight: 700;
+  color: #a78bfa;
+}
+
+.daily-info-note {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+}
+
 /* ===== Dev Typing Game ===== */
 
 .game-area {
@@ -3069,6 +3171,8 @@
   text-align: center;
   margin-bottom: 1.5rem;
 }
+
+.game-container { /* wrapper for each game */ }
 
 .game-start-screen,
 .game-over-screen {
@@ -3263,6 +3367,174 @@
 .game-submit-status--ok  { color: #22c55e; }
 .game-submit-status--err { color: #ef4444; }
 
+/* ===== Quiz Styles ===== */
+
+.quiz-question {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.quiz-code {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #a5b4fc;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  max-width: 28rem;
+  margin: 0 auto 0.75rem;
+}
+
+.quiz-option-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.65rem 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.quiz-option-btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.quiz-option-btn--correct {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #22c55e !important;
+}
+
+.quiz-option-btn--wrong {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+}
+
+/* ===== Bug Hunt Styles ===== */
+
+.bug-hint {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+.bug-code {
+  text-align: left;
+  max-width: 32rem;
+  margin: 0 auto 0.75rem;
+}
+
+.bug-code-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85rem;
+  border: 2px solid transparent;
+}
+
+.bug-code-line:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.bug-line-num {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+  min-width: 1.5rem;
+  text-align: right;
+  user-select: none;
+}
+
+.bug-code-line code {
+  color: #a5b4fc;
+}
+
+.bug-code-line--bug {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.1) !important;
+}
+
+.bug-code-line--wrong {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.bug-no-bug-btn {
+  margin-top: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+
+.bug-no-bug-btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Leaderboard Filter ===== */
+
+.leaderboard-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leaderboard-filter {
+  display: flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
+  padding: 0.15rem;
+}
+
+.lb-filter-btn {
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.3rem 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.lb-filter-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lb-filter-btn--active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
 /* ===== Leaderboard ===== */
 
 .leaderboard-section {
@@ -3337,6 +3609,33 @@
 
 /* ===== Light theme — game ===== */
 
+[data-theme="light"] .game-selector .game-sel-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .game-sel-btn--active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #0a0a0a;
+}
+[data-theme="light"] .game-mode-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .game-mode-btn--active {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #0a0a0a;
+}
+[data-theme="light"] .daily-info {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+[data-theme="light"] .daily-info-date { color: #6366f1; }
+[data-theme="light"] .daily-info-note { color: rgba(0, 0, 0, 0.45); }
+
 [data-theme="light"] .game-area,
 [data-theme="light"] .leaderboard-section {
   background: rgba(245, 245, 245, 0.9);
@@ -3388,6 +3687,35 @@
 [data-theme="light"] .leaderboard-row--top td { color: #0a0a0a; }
 [data-theme="light"] .leaderboard-empty { color: rgba(0, 0, 0, 0.35); }
 
+/* Light — quiz */
+[data-theme="light"] .quiz-question { color: #0a0a0a; }
+[data-theme="light"] .quiz-code { background: rgba(0, 0, 0, 0.05); color: #4338ca; }
+[data-theme="light"] .quiz-option-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0a0a0a;
+}
+[data-theme="light"] .quiz-option-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Light — bug hunt */
+[data-theme="light"] .bug-hint { color: rgba(0, 0, 0, 0.55); }
+[data-theme="light"] .bug-code-line:hover { background: rgba(0, 0, 0, 0.04); border-color: rgba(0, 0, 0, 0.12); }
+[data-theme="light"] .bug-line-num { color: rgba(0, 0, 0, 0.25); }
+[data-theme="light"] .bug-code-line code { color: #4338ca; }
+[data-theme="light"] .bug-no-bug-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Light — leaderboard filter */
+[data-theme="light"] .leaderboard-filter { background: rgba(0, 0, 0, 0.04); }
+[data-theme="light"] .lb-filter-btn { color: rgba(0, 0, 0, 0.4); }
+[data-theme="light"] .lb-filter-btn--active { background: rgba(0, 0, 0, 0.08); color: #0a0a0a; }
+
 /* ===== Goofy theme — game ===== */
 
 [data-theme="goofy"] .game-area,
@@ -3404,4 +3732,17 @@
 [data-theme="goofy"] .game-start-btn,
 [data-theme="goofy"] .game-submit-btn {
   animation: btnBounce 1.4s ease-in-out infinite;
+}
+
+[data-theme="goofy"] .game-sel-btn {
+  border-style: dashed;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+[data-theme="goofy"] .quiz-option-btn {
+  border-style: dashed;
+}
+
+[data-theme="goofy"] .bug-code-line {
+  border-style: dashed;
 }
